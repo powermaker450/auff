@@ -32,11 +32,13 @@ export const ApiProvider = ({ children }: ApiProviderProps) => {
     SecureStoreWrapper.setItem("token", token);
     SecureStoreWrapper.setItem("baseUrl", baseUrl);
     setApi(new TwoAuthApi(baseUrl, token));
+    setBaseUrl(baseUrl);
     setLoggedIn(true);
   };
 
   const logout = () => {
     setApi(new TwoAuthApi("http://localhost", ""));
+    setBaseUrl("");
     setLoggedIn(false);
   };
 
