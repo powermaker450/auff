@@ -1,9 +1,12 @@
+import { SQLiteProvider } from "expo-sqlite";
 import { useColorScheme, View } from "react-native";
 import { Stack } from "expo-router";
 import { useMaterial3Theme } from "@pchmn/expo-material3-theme";
 import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
 import { useMemo } from "react";
 import { ApiProvider } from "@/contexts/ApiProvider";
+import SetupDb from "@/util/SetupDb";
+import { ToastProvider } from "@/contexts/ToastProvider";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -29,11 +32,15 @@ export default function RootLayout() {
 
   return (
     <PaperProvider theme={paperTheme}>
-      <ApiProvider>
-        <View style={styles.view}>
-          <Stack screenOptions={styles.stack} />
-        </View>
-      </ApiProvider>
+      <SQLiteProvider databaseName="data.db" onInit={SetupDb}>
+        <ApiProvider>
+          <ToastProvider>
+            <View style={styles.view}>
+              <Stack screenOptions={styles.stack} />
+            </View>
+          </ToastProvider>
+        </ApiProvider>
+      </SQLiteProvider>
     </PaperProvider>
   )
 }

@@ -6,6 +6,7 @@ import { ScrollView, View } from "react-native";
 import { Appbar, List, useTheme } from "react-native-paper";
 import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useToast } from "@/contexts/ToastProvider";
 
 const Index = () => {
   const theme = useTheme();
