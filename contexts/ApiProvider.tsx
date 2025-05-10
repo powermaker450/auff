@@ -1,0 +1,84 @@
+import SecureStoreWrapper from "@/util/SecureStoreWrapper";
+import { TwoAuthApi } from "@povario/2fauth.js";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+
+interface ApiProviderProps {
+  children: ReactNode;
+}
+
+interface SetupApiProps {
+  baseUrl: string;
+  token: string;
+}
+
+interface ApiData {
+  api: TwoAuthApi;
+  baseUrl: string;
+  login: ({ baseUrl, token }: SetupApiProps) => void;
+  logout: () => void;
+  loggedIn: boolean;
+  loading: boolean;
+}
+
+const ApiContext = createContext<ApiData | undefined>(undefined);
+
+export const ApiProvider = ({ children }: ApiProviderProps) => {
+
+  const [api, setApi] = useState(new TwoAuthApi("http://localhost", ""));
+  const [baseUrl, setBaseUrl] = useState("");
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const login = ({ baseUrl, token }: SetupApiProps) => {
+    SecureStoreWrapper.setItem("token", token);
+    SecureStoreWrapper.setItem("baseUrl", baseUrl);
+    setApi(new TwoAuthApi(baseUrl, token));
+    setLoggedIn(true);
+  };
+
+  const logout = () => {
+    setApi(new TwoAuthApi("http://localhost", ""));
+    setLoggedIn(false);
+  };
+
+  const checkLoggedIn = async () => {
+    const token = await SecureStoreWrapper.getItem("token");
+    const baseUrl = await SecureStoreWrapper.getItem("baseUrl");
+
+    if (baseUrl && token) {
+      setApi(new TwoAuthApi(baseUrl, token));
+      setBaseUrl(baseUrl);
+    }
+
+    setLoggedIn(!!token);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    checkLoggedIn();
+  }, []);
+
+  return (
+    <ApiContext.Provider
+      value={{
+        api,
+        baseUrl,
+        login,
+        logout,
+        loggedIn,
+        loading
+      }}
+    >
+      {children}
+    </ApiContext.Provider>
+  );
+}
+
+export const useApi = () => {
+  const context = useContext(ApiContext);
+
+  if (context === undefined) {
+    throw new Error("useApi must be called within an ApiContext");
+  }
+
+  return context;
+}
