@@ -1,23 +1,68 @@
 import { useApi } from "@/contexts/ApiProvider";
 import { StyleProp } from "@/util/StyleProp";
-import { Account } from "@povario/2fauth.js";
+import { TwoFAccount } from "@povario/2fauth.js";
 import { ComponentProps, useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { Appbar, List, useTheme } from "react-native-paper";
 import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useToast } from "@/contexts/ToastProvider";
+import { useSQLiteContext } from "expo-sqlite";
+import { useNetworkState } from "expo-network";
 
 const Index = () => {
+  const db = useSQLiteContext();
+  const network = useNetworkState();
   const theme = useTheme();
   const { api, baseUrl } = useApi();
   const { bottom } = useSafeAreaInsets();
-  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [accounts, setAccounts] = useState<TwoFAccount<boolean>[]>([]);
 
   useEffect(() => {
-    const getData = async () => setAccounts(await api.accounts.getAll());
-    getData();
-  }, []);
+    async function getData() {
+      const accountTable = await db.prepareAsync(`
+        INSERT INTO accounts VALUES ($id, $service, $account, $icon, $otp_type, $secret, $digits, $algorithm, $group_id)
+        ON CONFLICT(id) DO UPDATE SET
+          icon = $icon,
+          otp_type = $otp_type,
+          secret = $secret,
+          digits = $digits,
+          algorithm = $algorithm,
+          group_id = $group_id
+      `);
+      const result = await db.getAllAsync<TwoFAccount<true>>("SELECT * FROM accounts");
+
+      if (!network.isConnected) {
+        await accountTable.finalizeAsync();
+        setAccounts(result);
+        return;
+      }
+
+      const net = await api.accounts.getAll<true>(true);
+      setAccounts(net);
+
+      try {
+        for (const acc of net) {
+          await accountTable.executeAsync({
+            $id: acc.id,
+            $service: acc.service,
+            $account: acc.account,
+            $icon: acc.icon,
+            $otp_type: acc.otp_type,
+            $secret: acc.secret,
+            $digits: acc.digits,
+            $algorithm: acc.algorithm,
+            $group_id: acc.group_id
+          });
+        }
+      } finally {
+        console.log("DB done!")
+        await accountTable.finalizeAsync();
+      }
+    }
+
+    getData()
+      .catch(console.error)
+  }, [network]);
 
   const styles: {
     account: StyleProp<typeof List["Item"]>;

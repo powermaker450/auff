@@ -2,7 +2,8 @@ import * as SecureStore from "expo-secure-store";
 
 type SecureStoreKey = 
   | "baseUrl"
-  | "token";
+  | "token"
+  | "cipher";
 
 class SecureStoreWrapper {
   public static async getItem(key: SecureStoreKey): Promise<string | null> {

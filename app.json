@@ -36,6 +36,12 @@
           "backgroundColor": "#ffffff"
         }
       ],
+      [
+        "expo-sqlite",
+        {
+          "useSQLCipher": true
+        }
+      ],
       "expo-secure-store"
     ],
     "experiments": {
