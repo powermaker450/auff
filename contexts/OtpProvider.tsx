@@ -1,7 +1,7 @@
 import { TwoFAccount } from "@povario/2fauth.js";
 import { useSQLiteContext } from "expo-sqlite";
-import { HmacAlgorithm, useExpoTotp } from "expo-totp";
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from "react";
+import { HOTP, TOTP } from "otpauth";
 
 interface OtpProviderProps {
   children?: ReactNode;
@@ -11,17 +11,16 @@ interface OtpProviderData {
   setAccount: (id: number) => void;
   clearAccount: () => void;
   code: string | null;
-  remainingTime: number | null; 
 }
 
 const OtpContext = createContext<OtpProviderData | undefined>(undefined);
 
 export const OtpProvider = ({ children }: OtpProviderProps) => {
   const db = useSQLiteContext();
-  const totp = useExpoTotp();
-  const [id, setId] = useState<number>();
+  const [id, setId] = useState<number | null>(null);
+  const [code, setCode] = useState<string | null>(null);
   const setAccount = (id: number) => setId(id);
-  const clearAccount = () => setId(undefined);
+  const clearAccount = () => setId(null);
 
   const start = useCallback(async () => {
     if (!id) {
@@ -34,24 +33,30 @@ export const OtpProvider = ({ children }: OtpProviderProps) => {
     }
 
     if (account.otp_type === "hotp") {
-      totp.start(account.secret, {
-        algorithm: account.algorithm.toUpperCase() as HmacAlgorithm,
-        digits: account.digits!
+      const hotp = new HOTP({
+        algorithm: account.algorithm.toUpperCase(),
+        secret: account.secret,
+        counter: account.counter,
+        digits: account.digits!,
       });
+
+      setCode(hotp.generate());
+      return;
     }
 
-    if (account.otp_type === "totp") {
-      totp.start(account.secret, {
-        algorithm: account.algorithm.toUpperCase() as HmacAlgorithm,
-        digits: account.digits!,
-        interval: account.period
-      });
-    }
+    const totp = new TOTP({
+      algorithm: account.algorithm.toUpperCase(),
+      secret: account.secret,
+      digits: account.digits!,
+      period: account.period
+    });
+    
+    setCode(totp.generate());
   }, [id]);
 
   useEffect(() => {
     if (!id) {
-      totp.stop();
+      return;
     }
 
     start()
@@ -61,10 +66,9 @@ export const OtpProvider = ({ children }: OtpProviderProps) => {
   return (
     <OtpContext.Provider
       value={{
-        code: totp.code,
+        code,
         setAccount,
-        clearAccount,
-        remainingTime: totp.remainingTime
+        clearAccount
       }}
     >
       {children}
