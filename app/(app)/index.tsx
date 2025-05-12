@@ -8,11 +8,14 @@ import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSQLiteContext } from "expo-sqlite";
 import { useNetworkState } from "expo-network";
+import { useOtp } from "@/contexts/OtpProvider";
+import { router } from "expo-router";
 
 const Index = () => {
   const db = useSQLiteContext();
   const network = useNetworkState();
   const theme = useTheme();
+  const otp = useOtp();
   const { api, baseUrl } = useApi();
   const { bottom } = useSafeAreaInsets();
   const [accounts, setAccounts] = useState<TwoFAccount<boolean>[]>([]);
@@ -31,7 +34,7 @@ const Index = () => {
       `);
       const result = await db.getAllAsync<TwoFAccount<true>>("SELECT * FROM accounts");
 
-      if (!network.isConnected) {
+      if (!network.isInternetReachable) {
         await accountTable.finalizeAsync();
         setAccounts(result);
         return;
@@ -80,7 +83,7 @@ const Index = () => {
     },
     view: {
       width: "100%",
-      marginBottom: bottom,
+      marginBottom: bottom * 7,
     },
     title: {
       fontWeight: "bold"
@@ -92,13 +95,18 @@ const Index = () => {
     }
   }
 
-  const mapAccount = (account: Account) => {
+  const mapAccount = (account: TwoFAccount) => {
     const icon = () => (
       <Image
         source={baseUrl + `/storage/icons/${account.icon ?? "noicon.svg"}`}
         style={styles.icon}
       />
-    )
+    );
+
+    const openOtp = () => {
+      otp.setAccount(account.id!);
+      router.navigate("/account");
+    }
 
     return (
       <List.Item
@@ -108,6 +116,7 @@ const Index = () => {
         description={account.account}
         titleStyle={styles.title}
         left={icon}
+        onPress={openOtp}
       />
     );
   }

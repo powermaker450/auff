@@ -7,6 +7,7 @@ import { useMemo } from "react";
 import { ApiProvider } from "@/contexts/ApiProvider";
 import SetupDb from "@/util/SetupDb";
 import { ToastProvider } from "@/contexts/ToastProvider";
+import { OtpProvider } from "@/contexts/OtpProvider";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -34,11 +35,13 @@ export default function RootLayout() {
     <PaperProvider theme={paperTheme}>
       <SQLiteProvider databaseName="data.db" onInit={SetupDb}>
         <ApiProvider>
-          <ToastProvider>
-            <View style={styles.view}>
-              <Stack screenOptions={styles.stack} />
-            </View>
-          </ToastProvider>
+          <OtpProvider>
+            <ToastProvider>
+              <View style={styles.view}>
+                <Stack screenOptions={styles.stack} />
+              </View>
+            </ToastProvider>
+          </OtpProvider>
         </ApiProvider>
       </SQLiteProvider>
     </PaperProvider>
