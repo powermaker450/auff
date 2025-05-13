@@ -22,7 +22,16 @@ const Index = () => {
 
   useEffect(() => {
     async function getData() {
-      const accountTable = await db.prepareAsync(`
+      const localAccounts = await db.getAllAsync<TwoFAccount<true>>("SELECT * FROM accounts");
+      
+      // If we are offline, just show all the accounts in the local DB
+      if (!network.isInternetReachable) {
+        setAccounts(localAccounts);
+        return;
+      }
+      
+      // Prepared statements
+      const insertAccount = await db.prepareAsync(`
         INSERT INTO accounts VALUES ($id, $service, $account, $icon, $otp_type, $secret, $digits, $algorithm, $group_id)
         ON CONFLICT(id) DO UPDATE SET
           icon = $icon,
@@ -32,20 +41,28 @@ const Index = () => {
           algorithm = $algorithm,
           group_id = $group_id
       `);
-      const result = await db.getAllAsync<TwoFAccount<true>>("SELECT * FROM accounts");
+      const deleteAccount = await db.prepareAsync("DELETE FROM accounts WHERE id = $id");
 
-      if (!network.isInternetReachable) {
-        await accountTable.finalizeAsync();
-        setAccounts(result);
-        return;
+      // Get and set server accounts
+      const serverAccounts = await api.accounts.getAll<true>(true);
+      setAccounts(serverAccounts);
+
+      // Check if any server accounts have been deleted and sync that to the local DB
+      try {
+        const localIds = localAccounts.map(account => account.id);
+        const serverIds = serverAccounts.map(account => account.id);
+
+        for (const $id of localIds) {
+          !serverIds.includes($id) && await deleteAccount.executeAsync({ $id });
+        }
+      } finally {
+        await deleteAccount.finalizeAsync();
       }
 
-      const net = await api.accounts.getAll<true>(true);
-      setAccounts(net);
-
+      // Update/insert all accounts from the server side into the local DB
       try {
-        for (const acc of net) {
-          await accountTable.executeAsync({
+        for (const acc of localAccounts) {
+          await insertAccount.executeAsync({
             $id: acc.id,
             $service: acc.service,
             $account: acc.account,
@@ -58,8 +75,7 @@ const Index = () => {
           });
         }
       } finally {
-        console.log("DB done!")
-        await accountTable.finalizeAsync();
+        await insertAccount.finalizeAsync();
       }
     }
 
