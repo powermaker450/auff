@@ -25,7 +25,7 @@ export default function RootLayout() {
       backgroundColor: paperTheme.colors.background
     },
     stack: {
-      animation: "none",
+      animation: "fade",
       headerShown: false,
       contentStyle: {
         backgroundColor: paperTheme.colors.background
