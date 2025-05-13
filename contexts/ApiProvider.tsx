@@ -1,5 +1,6 @@
 import SecureStoreWrapper from "@/util/SecureStoreWrapper";
 import { TwoAuthApi } from "@povario/2fauth.js";
+import { useSQLiteContext } from "expo-sqlite";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
 interface ApiProviderProps {
@@ -24,6 +25,7 @@ const ApiContext = createContext<ApiData | undefined>(undefined);
 
 export const ApiProvider = ({ children }: ApiProviderProps) => {
 
+  const db = useSQLiteContext();
   const [api, setApi] = useState(new TwoAuthApi("http://localhost", ""));
   const [baseUrl, setBaseUrl] = useState("");
   const [loggedIn, setLoggedIn] = useState(false);
@@ -36,13 +38,14 @@ export const ApiProvider = ({ children }: ApiProviderProps) => {
     setLoggedIn(true);
   };
 
-  const logout = () => {
+  const logout = async () => {
     setApi(new TwoAuthApi("http://localhost", ""));
     setBaseUrl("");
     setLoggedIn(false);
 
-    SecureStoreWrapper.setItem("token", "");
-    SecureStoreWrapper.setItem("baseUrl", "");
+    await SecureStoreWrapper.setItem("token", "");
+    await SecureStoreWrapper.setItem("baseUrl", "");
+    await db.execAsync("DELETE FROM accounts");
   };
 
   const checkLoggedIn = async () => {
