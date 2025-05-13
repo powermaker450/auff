@@ -3,14 +3,15 @@ import { useApi } from "@/contexts/ApiProvider";
 import { StyleProp } from "@/util/StyleProp";
 import { useCallback, useState } from "react";
 import { Button, Text, TextInput } from "react-native-paper";
-import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
+import TouchVib from "@/util/TouchVib";
 
 const Login = () => {
   const { login } = useApi();
 
   const [baseUrl, setBaseUrl] = useState("");
   const [token, setToken] = useState("");
+  const emptyFields = !baseUrl.startsWith("http") || !token;
 
   const execLogin = useCallback(
     () => {
@@ -60,8 +61,9 @@ const Login = () => {
 
       <Button
         mode="contained"
-        onPressIn={() => Haptics.impactAsync()}
+        onPressIn={TouchVib}
         onPress={execLogin}
+        disabled={emptyFields}
       >
         Login
       </Button>

@@ -36,15 +36,15 @@ export default function RootLayout() {
   return (
     <PaperProvider theme={paperTheme}>
       <SQLiteProvider databaseName="data.db" onInit={SetupDb}>
-        <ApiProvider>
-          <OtpProvider>
-            <ToastProvider>
-              <View style={styles.view}>
-                <Stack screenOptions={styles.stack} />
-              </View>
-            </ToastProvider>
-          </OtpProvider>
-        </ApiProvider>
+        <ToastProvider>
+          <ApiProvider>
+            <OtpProvider>
+                <View style={styles.view}>
+                  <Stack screenOptions={styles.stack} />
+                </View>
+            </OtpProvider>
+          </ApiProvider>
+        </ToastProvider>
       </SQLiteProvider>
     </PaperProvider>
   )

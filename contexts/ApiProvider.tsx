@@ -2,6 +2,8 @@ import SecureStoreWrapper from "@/util/SecureStoreWrapper";
 import { TwoAuthApi } from "@povario/2fauth.js";
 import { useSQLiteContext } from "expo-sqlite";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { AxiosError } from "axios";
+import { useToast } from "./ToastProvider";
 
 interface ApiProviderProps {
   children: ReactNode;
@@ -26,6 +28,7 @@ const ApiContext = createContext<ApiData | undefined>(undefined);
 export const ApiProvider = ({ children }: ApiProviderProps) => {
 
   const db = useSQLiteContext();
+  const toast = useToast();
   const [api, setApi] = useState(new TwoAuthApi("http://localhost", ""));
   const [baseUrl, setBaseUrl] = useState("");
   const [loggedIn, setLoggedIn] = useState(false);
@@ -48,7 +51,7 @@ export const ApiProvider = ({ children }: ApiProviderProps) => {
     await db.execAsync("DELETE FROM accounts");
   };
 
-  const checkLoggedIn = async () => {
+  const getLocalCredentials = async () => {
     const token = await SecureStoreWrapper.getItem("token");
     const baseUrl = await SecureStoreWrapper.getItem("baseUrl");
 
@@ -62,8 +65,34 @@ export const ApiProvider = ({ children }: ApiProviderProps) => {
   }
 
   useEffect(() => {
-    checkLoggedIn();
+    if (!loggedIn) {
+      return;
+    }
+
+    getLocalCredentials();
   }, []);
+
+  useEffect(() => {
+    async function checkLoggedIn() {
+      // @ts-ignore
+      if (api.axios.getUri() === "http://localhost") {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        await api.self.getSelf();
+      } catch (err) {
+        if (err instanceof AxiosError) {
+          toast.error(err.message);
+        }
+        
+        await logout();
+      }
+    }
+
+    checkLoggedIn();
+  }, [api]);
 
   return (
     <ApiContext.Provider
