@@ -32,7 +32,7 @@ const Index = () => {
       setAccounts(localAccounts);
       return;
     }
-    
+
     // Prepared statements
     const insertAccount = await db.prepareAsync(`
       INSERT INTO accounts VALUES ($id, $service, $account, $icon, $otp_type, $secret, $digits, $algorithm, $group_id)
@@ -64,7 +64,7 @@ const Index = () => {
 
     // Update/insert all accounts from the server side into the local DB
     try {
-      for (const acc of localAccounts) {
+      for (const acc of serverAccounts) {
         await insertAccount.executeAsync({
           $id: acc.id,
           $service: acc.service,
@@ -82,11 +82,10 @@ const Index = () => {
     }
 
     setRefreshing(false);
-  }
-
+  };
+  
   useEffect(() => {
-    getData()
-      .catch(console.error)
+    getData();
   }, [network]);
 
   const styles: {
