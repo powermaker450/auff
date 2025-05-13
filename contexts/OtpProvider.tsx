@@ -59,7 +59,6 @@ export const OtpProvider = ({ children }: OtpProviderProps) => {
     }
 
     setMaxTime(account.period ?? 30);
-    console.log(account);
     const totp = new TOTP({
       algorithm: account.algorithm.toUpperCase(),
       secret: account.secret,
