@@ -1,9 +1,8 @@
 import MainView from "@/components/MainView";
 import { useOtp } from "@/contexts/OtpProvider";
 import { StyleProp } from "@/util/StyleProp";
-import { Header } from "@react-navigation/elements";
 import { router, useNavigation } from "expo-router";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { Appbar, ProgressBar, Surface, Text, useTheme } from "react-native-paper";
 
 const Account = () => {
