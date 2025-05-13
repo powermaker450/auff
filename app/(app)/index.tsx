@@ -153,6 +153,11 @@ const Index = () => {
           onPress={getData}
           disabled={!network.isInternetReachable || refreshing}
         />
+        <Appbar.Action
+          icon="cog"
+          onPressIn={TouchVib}
+          onPress={() => router.navigate("/settings")}
+        />
       </Appbar.Header>
 
 

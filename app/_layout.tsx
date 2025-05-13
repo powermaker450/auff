@@ -3,11 +3,12 @@ import { useColorScheme, View } from "react-native";
 import { Stack } from "expo-router";
 import { useMaterial3Theme } from "@pchmn/expo-material3-theme";
 import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
-import { useMemo } from "react";
+import { ComponentProps, useMemo } from "react";
 import { ApiProvider } from "@/contexts/ApiProvider";
 import SetupDb from "@/util/SetupDb";
 import { ToastProvider } from "@/contexts/ToastProvider";
 import { OtpProvider } from "@/contexts/OtpProvider";
+import { StyleProp } from "@/util/StyleProp";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -18,12 +19,13 @@ export default function RootLayout() {
     [colorScheme, theme]
   );
 
-  const styles = {
+  const styles: { view: StyleProp<typeof View>, stack: ComponentProps<typeof Stack>["screenOptions"] } = {
     view: {
       flex: 1,
       backgroundColor: paperTheme.colors.background
     },
     stack: {
+      animation: "none",
       headerShown: false,
       contentStyle: {
         backgroundColor: paperTheme.colors.background

@@ -40,6 +40,9 @@ export const ApiProvider = ({ children }: ApiProviderProps) => {
     setApi(new TwoAuthApi("http://localhost", ""));
     setBaseUrl("");
     setLoggedIn(false);
+
+    SecureStoreWrapper.setItem("token", "");
+    SecureStoreWrapper.setItem("baseUrl", "");
   };
 
   const checkLoggedIn = async () => {
