@@ -10,15 +10,26 @@ interface OtpProviderProps {
 interface OtpProviderData {
   setAccount: (id: number) => void;
   clearAccount: () => void;
-  code: string | null;
+  code?: string;
+  maxTime?: number;
+  remainingTime?: number;
+  accountName?: string;
+  serviceName?: string;
 }
 
 const OtpContext = createContext<OtpProviderData | undefined>(undefined);
 
 export const OtpProvider = ({ children }: OtpProviderProps) => {
+  const MS_TO_SECONDS = 0.001;
+
   const db = useSQLiteContext();
   const [id, setId] = useState<number | null>(null);
-  const [code, setCode] = useState<string | null>(null);
+  const [code, setCode] = useState<string>();
+  const [maxTime, setMaxTime] = useState<number>();
+  const [remainingTime, setRemainingTime] = useState<number>();
+  const [accountName, setAccountName] = useState<string>();
+  const [serviceName, setServiceName] = useState<string>();
+  const [generator, setGenerator] = useState<number>();
   const setAccount = (id: number) => setId(id);
   const clearAccount = () => setId(null);
 
@@ -32,6 +43,9 @@ export const OtpProvider = ({ children }: OtpProviderProps) => {
       throw new Error(`No valid account with ID ${id} was found`);
     }
 
+    setServiceName(account.service ?? "[No Name]");
+    setAccountName(account.account);
+
     if (account.otp_type === "hotp") {
       const hotp = new HOTP({
         algorithm: account.algorithm.toUpperCase(),
@@ -44,18 +58,40 @@ export const OtpProvider = ({ children }: OtpProviderProps) => {
       return;
     }
 
+    setMaxTime(account.period ?? 30);
+    console.log(account);
     const totp = new TOTP({
       algorithm: account.algorithm.toUpperCase(),
       secret: account.secret,
       digits: account.digits!,
       period: account.period
     });
-    
-    setCode(totp.generate());
+
+    const update = () => {
+      const inSeconds = ~~(totp.remaining() * MS_TO_SECONDS);
+
+      setCode(totp.generate());
+      setRemainingTime(inSeconds);
+    }
+    update();
+
+    setGenerator(
+      setInterval(update, 1000)
+    );
   }, [id]);
+
+  const stop = useCallback(() => {
+    if (!generator) {
+      return;
+    }
+
+    clearInterval(generator);
+    setGenerator(undefined);
+  }, [generator]);
 
   useEffect(() => {
     if (!id) {
+      stop();
       return;
     }
 
@@ -66,9 +102,13 @@ export const OtpProvider = ({ children }: OtpProviderProps) => {
   return (
     <OtpContext.Provider
       value={{
-        code,
         setAccount,
-        clearAccount
+        clearAccount,
+        code,
+        maxTime,
+        remainingTime,
+        accountName,
+        serviceName
       }}
     >
       {children}
