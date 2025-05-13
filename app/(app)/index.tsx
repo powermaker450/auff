@@ -10,6 +10,7 @@ import { useSQLiteContext } from "expo-sqlite";
 import { useNetworkState } from "expo-network";
 import { useOtp } from "@/contexts/OtpProvider";
 import { router } from "expo-router";
+import TouchVib from "@/util/TouchVib";
 
 const Index = () => {
   const db = useSQLiteContext();
@@ -19,66 +20,71 @@ const Index = () => {
   const { api, baseUrl } = useApi();
   const { bottom } = useSafeAreaInsets();
   const [accounts, setAccounts] = useState<TwoFAccount<boolean>[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    async function getData() {
-      const localAccounts = await db.getAllAsync<TwoFAccount<true>>("SELECT * FROM accounts");
-      
-      // If we are offline, just show all the accounts in the local DB
-      if (!network.isInternetReachable) {
-        setAccounts(localAccounts);
-        return;
+  async function getData() {
+    setRefreshing(true);
+
+    const localAccounts = await db.getAllAsync<TwoFAccount<true>>("SELECT * FROM accounts");
+    
+    // If we are offline, just show all the accounts in the local DB
+    if (!network.isInternetReachable) {
+      setAccounts(localAccounts);
+      return;
+    }
+    
+    // Prepared statements
+    const insertAccount = await db.prepareAsync(`
+      INSERT INTO accounts VALUES ($id, $service, $account, $icon, $otp_type, $secret, $digits, $algorithm, $group_id)
+      ON CONFLICT(id) DO UPDATE SET
+        icon = $icon,
+        otp_type = $otp_type,
+        secret = $secret,
+        digits = $digits,
+        algorithm = $algorithm,
+        group_id = $group_id
+    `);
+    const deleteAccount = await db.prepareAsync("DELETE FROM accounts WHERE id = $id");
+
+    // Get and set server accounts
+    const serverAccounts = await api.accounts.getAll<true>(true);
+    setAccounts(serverAccounts);
+
+    // Check if any server accounts have been deleted and sync that to the local DB
+    try {
+      const localIds = localAccounts.map(account => account.id);
+      const serverIds = serverAccounts.map(account => account.id);
+
+      for (const $id of localIds) {
+        !serverIds.includes($id) && await deleteAccount.executeAsync({ $id });
       }
-      
-      // Prepared statements
-      const insertAccount = await db.prepareAsync(`
-        INSERT INTO accounts VALUES ($id, $service, $account, $icon, $otp_type, $secret, $digits, $algorithm, $group_id)
-        ON CONFLICT(id) DO UPDATE SET
-          icon = $icon,
-          otp_type = $otp_type,
-          secret = $secret,
-          digits = $digits,
-          algorithm = $algorithm,
-          group_id = $group_id
-      `);
-      const deleteAccount = await db.prepareAsync("DELETE FROM accounts WHERE id = $id");
-
-      // Get and set server accounts
-      const serverAccounts = await api.accounts.getAll<true>(true);
-      setAccounts(serverAccounts);
-
-      // Check if any server accounts have been deleted and sync that to the local DB
-      try {
-        const localIds = localAccounts.map(account => account.id);
-        const serverIds = serverAccounts.map(account => account.id);
-
-        for (const $id of localIds) {
-          !serverIds.includes($id) && await deleteAccount.executeAsync({ $id });
-        }
-      } finally {
-        await deleteAccount.finalizeAsync();
-      }
-
-      // Update/insert all accounts from the server side into the local DB
-      try {
-        for (const acc of localAccounts) {
-          await insertAccount.executeAsync({
-            $id: acc.id,
-            $service: acc.service,
-            $account: acc.account,
-            $icon: acc.icon,
-            $otp_type: acc.otp_type,
-            $secret: acc.secret,
-            $digits: acc.digits,
-            $algorithm: acc.algorithm,
-            $group_id: acc.group_id
-          });
-        }
-      } finally {
-        await insertAccount.finalizeAsync();
-      }
+    } finally {
+      await deleteAccount.finalizeAsync();
     }
 
+    // Update/insert all accounts from the server side into the local DB
+    try {
+      for (const acc of localAccounts) {
+        await insertAccount.executeAsync({
+          $id: acc.id,
+          $service: acc.service,
+          $account: acc.account,
+          $icon: acc.icon,
+          $otp_type: acc.otp_type,
+          $secret: acc.secret,
+          $digits: acc.digits,
+          $algorithm: acc.algorithm,
+          $group_id: acc.group_id
+        });
+      }
+    } finally {
+      await insertAccount.finalizeAsync();
+    }
+
+    setRefreshing(false);
+  }
+
+  useEffect(() => {
     getData()
       .catch(console.error)
   }, [network]);
@@ -141,6 +147,12 @@ const Index = () => {
     <>
       <Appbar.Header>
         <Appbar.Content title="Accounts" />
+        <Appbar.Action
+          icon="refresh"
+          onPressIn={TouchVib}
+          onPress={getData}
+          disabled={!network.isInternetReachable || refreshing}
+        />
       </Appbar.Header>
 
 
