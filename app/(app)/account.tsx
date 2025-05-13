@@ -1,6 +1,7 @@
 import MainView from "@/components/MainView";
 import { useOtp } from "@/contexts/OtpProvider";
 import { StyleProp } from "@/util/StyleProp";
+import TouchVib from "@/util/TouchVib";
 import { router, useNavigation } from "expo-router";
 import { useEffect } from "react";
 import { Appbar, ProgressBar, Surface, Text, useTheme } from "react-native-paper";
@@ -64,7 +65,7 @@ const Account = () => {
   return (
     <>
       <Appbar.Header>
-        <Appbar.BackAction onPress={router.back} />
+        <Appbar.BackAction onPressIn={TouchVib} onPress={router.back} />
         <Appbar.Content title={otp.serviceName} />
       </Appbar.Header>
 
