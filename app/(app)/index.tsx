@@ -3,7 +3,7 @@ import { StyleProp } from "@/util/StyleProp";
 import { TwoFAccount } from "@povario/2fauth.js";
 import { ComponentProps, useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
-import { Appbar, List, useTheme } from "react-native-paper";
+import { ActivityIndicator, Appbar, List, useTheme } from "react-native-paper";
 import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSQLiteContext } from "expo-sqlite";
@@ -142,6 +142,8 @@ const Index = () => {
     );
   }
 
+  const loading = <ActivityIndicator animating={refreshing} />;
+
   return (
     <>
       <Appbar.Header>
@@ -164,7 +166,7 @@ const Index = () => {
       style={styles.view}
     >
       <ScrollView>
-        {accounts.map(mapAccount)}
+        {accounts.length === 0 ? loading : accounts.map(mapAccount)}
       </ScrollView>
     </View>
     </>
