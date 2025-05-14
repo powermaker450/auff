@@ -11,13 +11,16 @@ import { useNetworkState } from "expo-network";
 import { useOtp } from "@/contexts/OtpProvider";
 import { router } from "expo-router";
 import TouchVib from "@/util/TouchVib";
+import { AxiosError } from "axios";
+import { useToast } from "@/contexts/ToastProvider";
 
 const Index = () => {
   const db = useSQLiteContext();
+  const toast = useToast();
   const network = useNetworkState();
   const theme = useTheme();
   const otp = useOtp();
-  const { api, baseUrl } = useApi();
+  const { api, baseUrl, logout } = useApi();
   const { bottom } = useSafeAreaInsets();
   const [accounts, setAccounts] = useState<TwoFAccount<boolean>[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -47,8 +50,23 @@ const Index = () => {
     const deleteAccount = await db.prepareAsync("DELETE FROM accounts WHERE id = $id");
 
     // Get and set server accounts
-    const serverAccounts = await api.accounts.getAll<true>(true);
-    setAccounts(serverAccounts);
+    let serverAccounts: TwoFAccount<true>[];
+
+    try {
+      serverAccounts = await api.accounts.getAll<true>(true);
+      setAccounts(serverAccounts);
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        toast.error(err.message);
+
+        // This was, for some reason, a string
+        err.status == 401 && logout();
+      }
+
+      return;
+    } finally {
+      setRefreshing(false);
+    }
 
     // Check if any server accounts have been deleted and sync that to the local DB
     try {
