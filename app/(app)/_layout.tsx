@@ -1,3 +1,4 @@
+import MainView from "@/components/MainView";
 import { useApi } from "@/contexts/ApiProvider";
 import { useMaterial3Theme } from "@pchmn/expo-material3-theme";
 import { Redirect, Stack } from "expo-router";
@@ -16,7 +17,11 @@ const AppLayout = () => {
   );
   
   if (loading) {
-    return <Text>Drying up all the rain...</Text>
+    return (
+      <MainView>
+        <Text variant="bodyLarge">Loading...</Text>
+      </MainView>
+    )
   }
 
   if (!loggedIn) {
