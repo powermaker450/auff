@@ -3,11 +3,12 @@ import { useOtp } from "@/contexts/OtpProvider";
 import { StyleProp } from "@/util/StyleProp";
 import TouchVib from "@/util/TouchVib";
 import { router, useNavigation } from "expo-router";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import { Appbar, ProgressBar, Surface, Text, useTheme } from "react-native-paper";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
 import { useToast } from "@/contexts/ToastProvider";
+import { Image } from "expo-image";
 
 const Account = () => {
   const otp = useOtp();
@@ -22,6 +23,7 @@ const Account = () => {
     title: StyleProp<typeof Text>;
     code: StyleProp<typeof Text>;
     progressBar: StyleProp<typeof ProgressBar>;
+    icon: StyleProp<typeof Image>;
   } = {
     view: {
       height: "50%",
@@ -41,6 +43,10 @@ const Account = () => {
     progressBar: {
       height: 10,
       width: 300,
+    },
+    icon: {
+      width: "25%",
+      height: "40%"
     }
   };
 
@@ -73,6 +79,13 @@ const Account = () => {
       style={styles.view}
       elevation={5}
     >
+      {otp.icon && (
+        <Image
+          source={otp.icon}
+          style={styles.icon}
+        />
+      )}
+
       <Text
         style={styles.title}
         variant="headlineLarge"

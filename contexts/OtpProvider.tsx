@@ -2,6 +2,7 @@ import { TwoFAccount } from "@povario/2fauth.js";
 import { useSQLiteContext } from "expo-sqlite";
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from "react";
 import { HOTP, TOTP } from "otpauth";
+import { useApi } from "./ApiProvider";
 
 interface OtpProviderProps {
   children?: ReactNode;
@@ -15,6 +16,7 @@ interface OtpProviderData {
   remainingTime?: number;
   accountName?: string;
   serviceName?: string;
+  icon?: string;
 }
 
 const OtpContext = createContext<OtpProviderData | undefined>(undefined);
@@ -23,15 +25,17 @@ export const OtpProvider = ({ children }: OtpProviderProps) => {
   const MS_TO_SECONDS = 0.001;
 
   const db = useSQLiteContext();
-  const [id, setId] = useState<number | null>(null);
+  const { baseUrl } = useApi();
+  const [id, setId] = useState<number>();
   const [code, setCode] = useState<string>();
   const [maxTime, setMaxTime] = useState<number>();
   const [remainingTime, setRemainingTime] = useState<number>();
   const [accountName, setAccountName] = useState<string>();
   const [serviceName, setServiceName] = useState<string>();
+  const [icon, setIcon] = useState<string>();
   const [generator, setGenerator] = useState<number>();
   const setAccount = (id: number) => setId(id);
-  const clearAccount = () => setId(null);
+  const clearAccount = () => setId(undefined);
 
   const start = useCallback(async () => {
     if (!id) {
@@ -45,6 +49,7 @@ export const OtpProvider = ({ children }: OtpProviderProps) => {
 
     setServiceName(account.service ?? "[No Name]");
     setAccountName(account.account);
+    setIcon(baseUrl + `/storage/icons/${account.icon ?? "noicon.svg"}`);
 
     if (account.otp_type === "hotp") {
       const hotp = new HOTP({
@@ -77,7 +82,7 @@ export const OtpProvider = ({ children }: OtpProviderProps) => {
     setGenerator(
       setInterval(update, 1000)
     );
-  }, [id]);
+  }, [baseUrl, id]);
 
   const stop = useCallback(() => {
     if (!generator) {
@@ -86,6 +91,13 @@ export const OtpProvider = ({ children }: OtpProviderProps) => {
 
     clearInterval(generator);
     setGenerator(undefined);
+
+    setCode(undefined);
+    setMaxTime(undefined);
+    setRemainingTime(undefined);
+    setAccountName(undefined);
+    setServiceName(undefined);
+    setIcon(undefined);
   }, [generator]);
 
   useEffect(() => {
@@ -107,7 +119,8 @@ export const OtpProvider = ({ children }: OtpProviderProps) => {
         maxTime,
         remainingTime,
         accountName,
-        serviceName
+        serviceName,
+        icon
       }}
     >
       {children}
