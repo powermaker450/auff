@@ -3,7 +3,7 @@ import { StyleProp } from "@/util/StyleProp";
 import { TwoFAccount } from "@povario/2fauth.js";
 import { ComponentProps, useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
-import { ActivityIndicator, Appbar, List, useTheme } from "react-native-paper";
+import { ActivityIndicator, Appbar, List, Tooltip, useTheme } from "react-native-paper";
 import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSQLiteContext } from "expo-sqlite";
@@ -148,17 +148,25 @@ const Index = () => {
     <>
       <Appbar.Header>
         <Appbar.Content title="Accounts" />
-        <Appbar.Action
-          icon="refresh"
-          onPressIn={TouchVib}
-          onPress={getData}
-          disabled={!network.isInternetReachable || refreshing}
-        />
-        <Appbar.Action
-          icon="cog"
-          onPressIn={TouchVib}
-          onPress={() => router.navigate("/settings")}
-        />
+
+        <Tooltip title={network.isInternetReachable ? "Refresh" : "Refresh (unavailable when offline)"}>
+          <Appbar.Action
+            icon="refresh"
+            onPressIn={TouchVib}
+            onPress={getData}
+            onLongPress={TouchVib}
+            disabled={!network.isInternetReachable || refreshing}
+          />
+        </Tooltip>
+
+        <Tooltip title="Settings">
+          <Appbar.Action
+            icon="cog"
+            onPressIn={TouchVib}
+            onPress={() => router.navigate("/settings")}
+            onLongPress={TouchVib}
+          />
+        </Tooltip>
       </Appbar.Header>
 
 
