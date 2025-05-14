@@ -55,6 +55,7 @@ const Login = () => {
         style={styles.input}
         mode="outlined"
         label="Token"
+        secureTextEntry
         value={token}
         onChangeText={text => setToken(text)}
       />
