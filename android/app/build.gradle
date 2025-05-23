@@ -93,7 +93,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0.0"
+        versionName "0.1.0"
     }
     signingConfigs {
         debug {
@@ -108,13 +108,12 @@ android {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
-            shrinkResources (findProperty('android.enableShrinkResourcesInReleaseBuilds')?.toBoolean() ?: false)
-            minifyEnabled enableProguardInReleaseBuilds
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-            crunchPngs (findProperty('android.enablePngCrunchInReleaseBuilds')?.toBoolean() ?: true)
+            if (project.hasProperty('AUFF_UPLOAD_STORE_FILE')) {
+                storeFile file(AUFF_UPLOAD_STORE_FILE)
+                storePassword AUFF_UPLOAD_STORE_PASSWORD
+                keyAlias AUFF_UPLOAD_KEY_ALIAS
+                keyPassword AUFF_UPLOAD_KEY_PASSWORD
+            }
         }
     }
     packagingOptions {
