@@ -40,6 +40,8 @@ const Index = () => {
     const insertAccount = await db.prepareAsync(`
       INSERT INTO accounts VALUES ($id, $service, $account, $icon, $otp_type, $secret, $digits, $algorithm, $group_id)
       ON CONFLICT(id) DO UPDATE SET
+        service = $service,
+        account = $account,
         icon = $icon,
         otp_type = $otp_type,
         secret = $secret,
