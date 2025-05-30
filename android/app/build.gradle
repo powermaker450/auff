@@ -102,11 +102,6 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
-    }
-    buildTypes {
-        debug {
-            signingConfig signingConfigs.debug
-        }
         release {
             if (project.hasProperty('AUFF_UPLOAD_STORE_FILE')) {
                 storeFile file(AUFF_UPLOAD_STORE_FILE)
@@ -114,6 +109,12 @@ android {
                 keyAlias AUFF_UPLOAD_KEY_ALIAS
                 keyPassword AUFF_UPLOAD_KEY_PASSWORD
             }
+        }
+    }
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
         }
     }
     packagingOptions {
