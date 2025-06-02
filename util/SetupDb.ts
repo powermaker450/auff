@@ -24,5 +24,11 @@ export default async function SetupDb(db: SQLiteDatabase) {
       algorithm TEXT NOT NULL,
       group_id INTEGER
     );
+
+    CREATE TABLE IF NOT EXISTS groups (
+      id INTEGER PRIMARY KEY NOT NULL,
+      name TEXT NOT NULL,
+      twofaccounts_count INTEGER NOT NULL
+    );
   `);
 }

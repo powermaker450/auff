@@ -1,6 +1,6 @@
 import { useApi } from "@/contexts/ApiProvider";
 import { StyleProp } from "@/util/StyleProp";
-import { TwoFAccount } from "@povario/2fauth.js";
+import { Group, TwoFAccount } from "@povario/2fauth.js";
 import { ComponentProps, useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { ActivityIndicator, Appbar, List, Tooltip, useTheme } from "react-native-paper";
@@ -13,6 +13,7 @@ import { router } from "expo-router";
 import TouchVib from "@/util/TouchVib";
 import { AxiosError } from "axios";
 import { useToast } from "@/contexts/ToastProvider";
+import AccountSorter from "@/components/AccountSorter";
 
 const Index = () => {
   const db = useSQLiteContext();
@@ -20,21 +21,31 @@ const Index = () => {
   const network = useNetworkState();
   const theme = useTheme();
   const otp = useOtp();
+
   const { api, baseUrl, logout } = useApi();
   const { bottom } = useSafeAreaInsets();
   const [accounts, setAccounts] = useState<TwoFAccount<boolean>[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [selectedGroups, setSelectedGroups] = useState<number[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
   async function getData() {
     setRefreshing(true);
 
+    const localGroups = await db.getAllAsync<Group>("SELECT * FROM groups");
     const localAccounts = await db.getAllAsync<TwoFAccount<true>>("SELECT * FROM accounts");
     
-    // If we are offline, just show all the accounts in the local DB
+    // If we are offline, just use the data in the local DB
     if (!network.isInternetReachable) {
       setAccounts(localAccounts);
+      setGroups(localGroups);
+      setRefreshing(false);
       return;
     }
+
+    // ---
+    // Fetching and setting accounts
+    // ---
 
     // Prepared statements
     const insertAccount = await db.prepareAsync(`
@@ -101,11 +112,66 @@ const Index = () => {
       await insertAccount.finalizeAsync();
     }
 
+    // ---
+    // Fetching and setting groups
+    // ---
+
+    // Prepared statements
+
+    const insertGroup = await db.prepareAsync(`
+      INSERT INTO groups VALUES ($id, $name, $twofaccounts_count)
+      ON CONFLICT(id) DO UPDATE SET
+        id = $id,
+        name = $name,
+        twofaccounts_count = $twofaccounts_count
+    `);
+
+    const deleteGroup = await db.prepareAsync(`DELETE FROM groups WHERE id = $id`);
+
+    let serverGroups: Group[];
+    try {
+      serverGroups = await api.groups.getAll();
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        toast.error(err.message);
+
+        // This was, for some reason, a string
+        err.status == 401 && logout();
+      }
+
+      return;
+    }
+
+    // Check if any groups have been deleted and sync that to the local DB
+    try {
+      const localGroupIds = localGroups.map(group => group.id);
+      const serverGroupIds = serverGroups.map(group => group.id);
+
+      for (const $id of localGroupIds) {
+        !serverGroupIds.includes($id) && await deleteGroup.executeAsync({ $id });
+      }
+    } finally {
+      await deleteGroup.finalizeAsync();
+    }
+
+    // Insert all server groups into the DB
+    try {
+      for (const group of serverGroups) {
+        await insertGroup.executeAsync({
+          $id: group.id,
+          $name: group.name,
+          $twofaccounts_count: group.twofaccounts_count
+        });
+      }
+    } finally {
+      await insertGroup.finalizeAsync();
+    }
+
     setRefreshing(false);
   };
-  
+
   useEffect(() => {
-    getData();
+    getData().catch(console.error);
   }, [network]);
 
   const styles: {
@@ -162,7 +228,14 @@ const Index = () => {
     );
   }
 
+  useEffect(() => console.log(selectedGroups), [selectedGroups]);
+
   const loading = <ActivityIndicator animating={refreshing} />;
+  const accountList = accounts.length === 0
+    ? loading
+    : selectedGroups.length === 0
+      ? accounts.map(mapAccount)
+      : accounts.map(account => selectedGroups.includes(account.group_id ?? 0) ? mapAccount(account) : undefined);
 
   return (
     <>
@@ -193,8 +266,14 @@ const Index = () => {
     <View
       style={styles.view}
     >
+      <AccountSorter
+        groups={groups}
+        selectedGroups={selectedGroups}
+        setSelectedGroups={setSelectedGroups}
+      />
+
       <ScrollView>
-        {accounts.length === 0 ? loading : accounts.map(mapAccount)}
+        {accountList}
       </ScrollView>
     </View>
     </>
