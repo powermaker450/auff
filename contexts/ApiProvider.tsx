@@ -85,9 +85,9 @@ export const ApiProvider = ({ children }: ApiProviderProps) => {
       } catch (err) {
         if (err instanceof AxiosError) {
           toast.error(err.message);
+
+          err.status == 401 && await logout(); 
         }
-        
-        await logout();
       }
     }
 
