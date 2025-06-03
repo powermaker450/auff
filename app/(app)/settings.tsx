@@ -3,7 +3,7 @@ import { useApi } from "@/contexts/ApiProvider";
 import TouchVib from "@/util/TouchVib";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { View } from "react-native";
 import { Appbar, Button, Dialog, Portal, Text, useTheme } from "react-native-paper";
 import * as Application from "expo-application";
 import { StyleProp } from "@/util/StyleProp";

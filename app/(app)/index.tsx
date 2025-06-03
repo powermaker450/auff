@@ -1,9 +1,9 @@
 import { useApi } from "@/contexts/ApiProvider";
 import { StyleProp } from "@/util/StyleProp";
 import { Group, TwoFAccount } from "@povario/2fauth.js";
-import { ComponentProps, useEffect, useState } from "react";
+import { ComponentProps, useEffect, useRef, useState } from "react";
 import { ScrollView, View } from "react-native";
-import { ActivityIndicator, Appbar, List, Tooltip, useTheme } from "react-native-paper";
+import { ActivityIndicator, Appbar, List, Modal, Portal, Tooltip, useTheme } from "react-native-paper";
 import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSQLiteContext } from "expo-sqlite";
@@ -13,7 +13,8 @@ import { router } from "expo-router";
 import TouchVib from "@/util/TouchVib";
 import { AxiosError } from "axios";
 import { useToast } from "@/contexts/ToastProvider";
-import AccountSorter from "@/components/AccountSorter";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import FilterSheet from "@/components/FilterSheet";
 
 const Index = () => {
   const db = useSQLiteContext();
@@ -28,6 +29,19 @@ const Index = () => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<number[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+
+  const [sheetModal, setSheetModal] = useState(false);
+  const sheet = useRef<BottomSheetModal>(null);
+  const handleSheetAnimate = (_: number, to: number) => to === -1 && setSheetModal(false);
+
+  const openSheet = () => {
+    setSheetModal(true);
+    sheet.current?.present();
+  };
+  const closeSheet = () => {
+    setSheetModal(false);
+    sheet.current?.close();
+  };
 
   async function getData() {
     setRefreshing(true);
@@ -242,6 +256,14 @@ const Index = () => {
       <Appbar.Header>
         <Appbar.Content title="Accounts" />
 
+        <Tooltip title="Filters">
+          <Appbar.Action
+            icon="filter-variant"
+            onPressIn={TouchVib}
+            onPress={openSheet}
+          />
+        </Tooltip>
+
         <Tooltip title={network.isInternetReachable ? "Refresh" : "Refresh (unavailable when offline)"}>
           <Appbar.Action
             icon="refresh"
@@ -263,19 +285,19 @@ const Index = () => {
       </Appbar.Header>
 
 
-    <View
-      style={styles.view}
-    >
-      <AccountSorter
-        groups={groups}
-        selectedGroups={selectedGroups}
-        setSelectedGroups={setSelectedGroups}
-      />
+      <View
+        style={styles.view}
+      >
+        <ScrollView>
+          {accountList}
+        </ScrollView>
+      </View>
 
-      <ScrollView>
-        {accountList}
-      </ScrollView>
-    </View>
+      {/* Putting the filter sheet inside the modal doesn't work for some reason... */}
+      <FilterSheet ref={sheet} onAnimate={handleSheetAnimate} />
+      <Modal visible={sheetModal} onDismiss={closeSheet}>
+        <></>
+      </Modal>
     </>
   )
 }
