@@ -3,7 +3,15 @@ import { StyleProp } from "@/util/StyleProp";
 import { Group, TwoFAccount } from "@povario/2fauth.js";
 import { ComponentProps, useEffect, useRef, useState } from "react";
 import { ScrollView, View } from "react-native";
-import { ActivityIndicator, Appbar, List, Modal, Portal, Tooltip, useTheme } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Appbar,
+  List,
+  Modal,
+  Portal,
+  Tooltip,
+  useTheme
+} from "react-native-paper";
 import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSQLiteContext } from "expo-sqlite";
@@ -32,7 +40,8 @@ const Index = () => {
 
   const [sheetModal, setSheetModal] = useState(false);
   const sheet = useRef<BottomSheetModal>(null);
-  const handleSheetAnimate = (_: number, to: number) => to === -1 && setSheetModal(false);
+  const handleSheetAnimate = (_: number, to: number) =>
+    to === -1 && setSheetModal(false);
 
   const openSheet = () => {
     setSheetModal(true);
@@ -47,8 +56,10 @@ const Index = () => {
     setRefreshing(true);
 
     const localGroups = await db.getAllAsync<Group>("SELECT * FROM groups");
-    const localAccounts = await db.getAllAsync<TwoFAccount<true>>("SELECT * FROM accounts");
-    
+    const localAccounts = await db.getAllAsync<TwoFAccount<true>>(
+      "SELECT * FROM accounts"
+    );
+
     // If we are offline, just use the data in the local DB
     if (!network.isInternetReachable) {
       setAccounts(localAccounts);
@@ -74,7 +85,9 @@ const Index = () => {
         algorithm = $algorithm,
         group_id = $group_id
     `);
-    const deleteAccount = await db.prepareAsync("DELETE FROM accounts WHERE id = $id");
+    const deleteAccount = await db.prepareAsync(
+      "DELETE FROM accounts WHERE id = $id"
+    );
 
     // Get and set server accounts
     let serverAccounts: TwoFAccount<true>[];
@@ -101,7 +114,7 @@ const Index = () => {
       const serverIds = serverAccounts.map(account => account.id);
 
       for (const $id of localIds) {
-        !serverIds.includes($id) && await deleteAccount.executeAsync({ $id });
+        !serverIds.includes($id) && (await deleteAccount.executeAsync({ $id }));
       }
     } finally {
       await deleteAccount.finalizeAsync();
@@ -140,7 +153,9 @@ const Index = () => {
         twofaccounts_count = $twofaccounts_count
     `);
 
-    const deleteGroup = await db.prepareAsync(`DELETE FROM groups WHERE id = $id`);
+    const deleteGroup = await db.prepareAsync(
+      `DELETE FROM groups WHERE id = $id`
+    );
 
     let serverGroups: Group[];
     try {
@@ -162,7 +177,8 @@ const Index = () => {
       const serverGroupIds = serverGroups.map(group => group.id);
 
       for (const $id of localGroupIds) {
-        !serverGroupIds.includes($id) && await deleteGroup.executeAsync({ $id });
+        !serverGroupIds.includes($id) &&
+          (await deleteGroup.executeAsync({ $id }));
       }
     } finally {
       await deleteGroup.finalizeAsync();
@@ -182,16 +198,16 @@ const Index = () => {
     }
 
     setRefreshing(false);
-  };
+  }
 
   useEffect(() => {
     getData().catch(console.error);
   }, [network]);
 
   const styles: {
-    account: StyleProp<typeof List["Item"]>;
+    account: StyleProp<(typeof List)["Item"]>;
     view: StyleProp<typeof View>;
-    title: ComponentProps<typeof List["Item"]>["titleStyle"];
+    title: ComponentProps<(typeof List)["Item"]>["titleStyle"];
     icon: StyleProp<typeof Image>;
   } = {
     account: {
@@ -204,7 +220,7 @@ const Index = () => {
     },
     view: {
       width: "100%",
-      marginBottom: bottom * 7,
+      marginBottom: bottom * 7
     },
     title: {
       fontWeight: "bold"
@@ -214,7 +230,7 @@ const Index = () => {
       width: "10%",
       height: "100%"
     }
-  }
+  };
 
   const mapAccount = (account: TwoFAccount) => {
     const icon = () => (
@@ -227,7 +243,7 @@ const Index = () => {
     const openOtp = () => {
       otp.setAccount(account.id!);
       router.navigate("/account");
-    }
+    };
 
     return (
       <List.Item
@@ -240,16 +256,21 @@ const Index = () => {
         onPress={openOtp}
       />
     );
-  }
+  };
 
   useEffect(() => console.log(selectedGroups), [selectedGroups]);
 
   const loading = <ActivityIndicator animating={refreshing} />;
-  const accountList = accounts.length === 0
-    ? loading
-    : selectedGroups.length === 0
-      ? accounts.map(mapAccount)
-      : accounts.map(account => selectedGroups.includes(account.group_id ?? 0) ? mapAccount(account) : undefined);
+  const accountList =
+    accounts.length === 0
+      ? loading
+      : selectedGroups.length === 0
+        ? accounts.map(mapAccount)
+        : accounts.map(account =>
+            selectedGroups.includes(account.group_id ?? 0)
+              ? mapAccount(account)
+              : undefined
+          );
 
   return (
     <>
@@ -264,7 +285,13 @@ const Index = () => {
           />
         </Tooltip>
 
-        <Tooltip title={network.isInternetReachable ? "Refresh" : "Refresh (unavailable when offline)"}>
+        <Tooltip
+          title={
+            network.isInternetReachable
+              ? "Refresh"
+              : "Refresh (unavailable when offline)"
+          }
+        >
           <Appbar.Action
             icon="refresh"
             onPressIn={TouchVib}
@@ -284,13 +311,8 @@ const Index = () => {
         </Tooltip>
       </Appbar.Header>
 
-
-      <View
-        style={styles.view}
-      >
-        <ScrollView>
-          {accountList}
-        </ScrollView>
+      <View style={styles.view}>
+        <ScrollView>{accountList}</ScrollView>
       </View>
 
       {/* Putting the filter sheet inside the modal doesn't work for some reason... */}
@@ -299,7 +321,7 @@ const Index = () => {
         <></>
       </Modal>
     </>
-  )
-}
+  );
+};
 
 export default Index;

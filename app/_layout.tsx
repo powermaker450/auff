@@ -15,11 +15,17 @@ export default function RootLayout() {
   const { theme } = useMaterial3Theme();
 
   const paperTheme = useMemo(
-    () => colorScheme === "dark" ? { ...MD3DarkTheme, colors: theme.dark } : { ...MD3LightTheme, colors: theme.light },
+    () =>
+      colorScheme === "dark"
+        ? { ...MD3DarkTheme, colors: theme.dark }
+        : { ...MD3LightTheme, colors: theme.light },
     [colorScheme, theme]
   );
 
-  const styles: { view: StyleProp<typeof View>, stack: ComponentProps<typeof Stack>["screenOptions"] } = {
+  const styles: {
+    view: StyleProp<typeof View>;
+    stack: ComponentProps<typeof Stack>["screenOptions"];
+  } = {
     view: {
       flex: 1,
       backgroundColor: paperTheme.colors.background
@@ -39,13 +45,13 @@ export default function RootLayout() {
         <ToastProvider>
           <ApiProvider>
             <OtpProvider>
-                <View style={styles.view}>
-                  <Stack screenOptions={styles.stack} />
-                </View>
+              <View style={styles.view}>
+                <Stack screenOptions={styles.stack} />
+              </View>
             </OtpProvider>
           </ApiProvider>
         </ToastProvider>
       </SQLiteProvider>
     </PaperProvider>
-  )
+  );
 }

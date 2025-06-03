@@ -1,7 +1,13 @@
 import SecureStoreWrapper from "@/util/SecureStoreWrapper";
 import { TwoAuthApi } from "@povario/2fauth.js";
 import { useSQLiteContext } from "expo-sqlite";
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState
+} from "react";
 import { AxiosError } from "axios";
 import { useToast } from "./ToastProvider";
 
@@ -26,7 +32,6 @@ interface ApiData {
 const ApiContext = createContext<ApiData | undefined>(undefined);
 
 export const ApiProvider = ({ children }: ApiProviderProps) => {
-
   const db = useSQLiteContext();
   const toast = useToast();
   const [api, setApi] = useState(new TwoAuthApi("http://localhost", ""));
@@ -62,7 +67,7 @@ export const ApiProvider = ({ children }: ApiProviderProps) => {
 
     setLoggedIn(!!token);
     setLoading(false);
-  }
+  };
 
   useEffect(() => {
     getLocalCredentials();
@@ -86,7 +91,7 @@ export const ApiProvider = ({ children }: ApiProviderProps) => {
         if (err instanceof AxiosError) {
           toast.error(err.message);
 
-          err.status == 401 && await logout(); 
+          err.status == 401 && (await logout());
         }
       }
     }
@@ -108,7 +113,7 @@ export const ApiProvider = ({ children }: ApiProviderProps) => {
       {children}
     </ApiContext.Provider>
   );
-}
+};
 
 export const useApi = () => {
   const context = useContext(ApiContext);
@@ -118,4 +123,4 @@ export const useApi = () => {
   }
 
   return context;
-}
+};

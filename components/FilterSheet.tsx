@@ -1,8 +1,11 @@
-import { ComponentProps, ReactNode, RefObject, useCallback, useMemo } from "react";
 import {
-  BottomSheetModal,
-  BottomSheetView
-} from "@gorhom/bottom-sheet";
+  ComponentProps,
+  ReactNode,
+  RefObject,
+  useCallback,
+  useMemo
+} from "react";
+import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import { StyleProp } from "@/util/StyleProp";
 import { useTheme } from "react-native-paper";
 import TouchVib from "@/util/TouchVib";
@@ -16,7 +19,12 @@ interface FilterSheetProps {
   children?: ReactNode;
 }
 
-const FilterSheet = ({ ref, onChange, onAnimate, children }: FilterSheetProps) => {
+const FilterSheet = ({
+  ref,
+  onChange,
+  onAnimate,
+  children
+}: FilterSheetProps) => {
   const theme = useTheme();
   const onAnimateInternal = useCallback(
     (from: number, to: number) => {
@@ -26,14 +34,11 @@ const FilterSheet = ({ ref, onChange, onAnimate, children }: FilterSheetProps) =
     [onAnimate]
   );
 
-  const snapPoints = useMemo(
-    () => ["25%", "50%"],
-    []
-  );
+  const snapPoints = useMemo(() => ["25%", "50%"], []);
 
   const styles: {
     sheet: BottomSheetModalType["style"];
-    background: BottomSheetModalType["backgroundStyle"]; 
+    background: BottomSheetModalType["backgroundStyle"];
     content: StyleProp<typeof BottomSheetView>;
     handle: BottomSheetModalType["handleStyle"];
     handleIcon: BottomSheetModalType["handleIndicatorStyle"];
@@ -50,7 +55,7 @@ const FilterSheet = ({ ref, onChange, onAnimate, children }: FilterSheetProps) =
       elevation: 24
     },
     background: {
-      backgroundColor: theme.colors.surfaceVariant,
+      backgroundColor: theme.colors.surfaceVariant
     },
     content: {
       flex: 1,
@@ -78,12 +83,10 @@ const FilterSheet = ({ ref, onChange, onAnimate, children }: FilterSheetProps) =
       snapPoints={snapPoints}
       onChange={onChange}
       onAnimate={onAnimateInternal}
-    > 
-      <BottomSheetView style={styles.content}>
-        {children}
-      </BottomSheetView>
+    >
+      <BottomSheetView style={styles.content}>{children}</BottomSheetView>
     </BottomSheetModal>
-  )
-}
+  );
+};
 
 export default FilterSheet;

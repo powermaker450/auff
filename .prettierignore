@@ -1,0 +1,13 @@
+# Folders
+android
+assets
+
+# Files
+app.json
+babel.config.json
+eslint.config.js
+package-lock.json
+package.json
+pnpm-lock.yaml
+README.md
+tsconfig.json

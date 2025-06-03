@@ -14,20 +14,23 @@ const AppLayout = () => {
   const { theme } = useMaterial3Theme();
 
   const paperTheme = useMemo(
-    () => colorScheme === "dark" ? { ...MD3DarkTheme, colors: theme.dark } : { ...MD3LightTheme, colors: theme.light },
+    () =>
+      colorScheme === "dark"
+        ? { ...MD3DarkTheme, colors: theme.dark }
+        : { ...MD3LightTheme, colors: theme.light },
     [colorScheme, theme]
   );
-  
+
   if (loading) {
     return (
       <MainView>
         <Text variant="bodyLarge">Loading...</Text>
       </MainView>
-    )
+    );
   }
 
   if (!loggedIn) {
-    return <Redirect href="/login" />
+    return <Redirect href="/login" />;
   }
 
   const styles = {
@@ -37,7 +40,7 @@ const AppLayout = () => {
         backgroundColor: paperTheme.colors.background
       }
     }
-  }
+  };
 
   return (
     <GestureHandlerRootView>
@@ -46,6 +49,6 @@ const AppLayout = () => {
       </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );
-}
+};
 
 export default AppLayout;

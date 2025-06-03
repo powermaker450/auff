@@ -13,9 +13,9 @@ const MainView = ({ children }: MainViewProps) => {
       alignItems: "center",
       justifyContent: "center"
     }
-  }
+  };
 
-  return <View style={styles.view}>{children}</View>
-}
+  return <View style={styles.view}>{children}</View>;
+};
 
 export default MainView;

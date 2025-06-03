@@ -1,16 +1,16 @@
-import * as SecureStore from "expo-secure-store"; 
+import * as SecureStore from "expo-secure-store";
 
-type SecureStoreKey = 
-  | "baseUrl"
-  | "token"
-  | "cipher";
+type SecureStoreKey = "baseUrl" | "token" | "cipher";
 
 class SecureStoreWrapper {
   public static async getItem(key: SecureStoreKey): Promise<string | null> {
     return await SecureStore.getItemAsync(key);
   }
 
-  public static async setItem(key: SecureStoreKey, value: string): Promise<void> {
+  public static async setItem(
+    key: SecureStoreKey,
+    value: string
+  ): Promise<void> {
     await SecureStore.setItemAsync(key, value);
   }
 

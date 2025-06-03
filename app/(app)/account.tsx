@@ -4,7 +4,13 @@ import { StyleProp } from "@/util/StyleProp";
 import TouchVib from "@/util/TouchVib";
 import { router, useNavigation } from "expo-router";
 import { useEffect } from "react";
-import { Appbar, ProgressBar, Surface, Text, useTheme } from "react-native-paper";
+import {
+  Appbar,
+  ProgressBar,
+  Surface,
+  Text,
+  useTheme
+} from "react-native-paper";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
 import { useToast } from "@/contexts/ToastProvider";
@@ -42,7 +48,7 @@ const Account = () => {
     },
     progressBar: {
       height: 10,
-      width: 300,
+      width: 300
     },
     icon: {
       width: "25%",
@@ -50,10 +56,11 @@ const Account = () => {
     }
   };
 
-  const progress = +(
-    (otp.remainingTime ?? 0) / (otp.maxTime ?? 30)
-  );
-  const formattedCode = otp.code?.substring(0, otp.code.length / 2) + " " + otp.code?.substring(otp.code.length / 2);
+  const progress = +((otp.remainingTime ?? 0) / (otp.maxTime ?? 30));
+  const formattedCode =
+    otp.code?.substring(0, otp.code.length / 2) +
+    " " +
+    otp.code?.substring(otp.code.length / 2);
 
   const copy = async () => {
     if (!otp.code) {
@@ -72,46 +79,25 @@ const Account = () => {
 
     await Clipboard.setStringAsync(otp.code);
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-  }
+  };
 
   const otpView = (
-    <Surface
-      style={styles.view}
-      elevation={5}
-    >
-      {otp.icon && (
-        <Image
-          source={otp.icon}
-          style={styles.icon}
-        />
-      )}
+    <Surface style={styles.view} elevation={5}>
+      {otp.icon && <Image source={otp.icon} style={styles.icon} />}
 
-      <Text
-        style={styles.title}
-        variant="headlineLarge"
-      >
+      <Text style={styles.title} variant="headlineLarge">
         {otp.serviceName}
       </Text>
-      
-      <Text
-        style={{ marginBottom: 30 }}
-        variant="headlineSmall"
-      >
+
+      <Text style={{ marginBottom: 30 }} variant="headlineSmall">
         {otp.accountName}
       </Text>
 
-      <Text
-        style={styles.code}
-        variant="titleLarge"
-        onPress={copy}
-      >
+      <Text style={styles.code} variant="titleLarge" onPress={copy}>
         {formattedCode}
       </Text>
-      
-      <ProgressBar
-        style={styles.progressBar}
-        progress={progress}
-      />
+
+      <ProgressBar style={styles.progressBar} progress={progress} />
     </Surface>
   );
 
@@ -122,11 +108,9 @@ const Account = () => {
         <Appbar.Content title={otp.serviceName} />
       </Appbar.Header>
 
-      <MainView>
-        {otpView}
-      </MainView>
+      <MainView>{otpView}</MainView>
     </>
-  )
-}
+  );
+};
 
 export default Account;

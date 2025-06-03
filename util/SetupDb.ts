@@ -1,5 +1,5 @@
 import * as Crypto from "expo-crypto";
-import { type SQLiteDatabase } from "expo-sqlite"
+import { type SQLiteDatabase } from "expo-sqlite";
 import SecureStoreWrapper from "./SecureStoreWrapper";
 
 export default async function SetupDb(db: SQLiteDatabase) {

@@ -1,6 +1,13 @@
 import { TwoFAccount } from "@povario/2fauth.js";
 import { useSQLiteContext } from "expo-sqlite";
-import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState
+} from "react";
 import { HOTP, TOTP } from "otpauth";
 import { useApi } from "./ApiProvider";
 
@@ -42,7 +49,9 @@ export const OtpProvider = ({ children }: OtpProviderProps) => {
       return;
     }
 
-    const account = await db.getFirstAsync<TwoFAccount<true>>(`SELECT * FROM accounts WHERE id = ${id}`);
+    const account = await db.getFirstAsync<TwoFAccount<true>>(
+      `SELECT * FROM accounts WHERE id = ${id}`
+    );
     if (!account) {
       throw new Error(`No valid account with ID ${id} was found`);
     }
@@ -56,7 +65,7 @@ export const OtpProvider = ({ children }: OtpProviderProps) => {
         algorithm: account.algorithm.toUpperCase(),
         secret: account.secret,
         counter: account.counter,
-        digits: account.digits!,
+        digits: account.digits!
       });
 
       setCode(hotp.generate());
@@ -76,12 +85,10 @@ export const OtpProvider = ({ children }: OtpProviderProps) => {
 
       setCode(totp.generate());
       setRemainingTime(inSeconds);
-    }
+    };
     update();
 
-    setGenerator(
-      setInterval(update, 1000)
-    );
+    setGenerator(setInterval(update, 1000));
   }, [baseUrl, id]);
 
   const stop = useCallback(() => {
@@ -106,8 +113,7 @@ export const OtpProvider = ({ children }: OtpProviderProps) => {
       return;
     }
 
-    start()
-      .catch(console.error);
+    start().catch(console.error);
   }, [id]);
 
   return (
@@ -125,8 +131,8 @@ export const OtpProvider = ({ children }: OtpProviderProps) => {
     >
       {children}
     </OtpContext.Provider>
-  )
-}
+  );
+};
 
 export const useOtp = () => {
   const context = useContext(OtpContext);
@@ -136,4 +142,4 @@ export const useOtp = () => {
   }
 
   return context;
-}
+};

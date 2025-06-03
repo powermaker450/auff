@@ -13,15 +13,15 @@ const Login = () => {
   const [token, setToken] = useState("");
   const emptyFields = !baseUrl.startsWith("http") || !token;
 
-  const execLogin = useCallback(
-    () => {
-      login({ baseUrl, token });
-      router.replace("/(app)");
-    },
-    [baseUrl, token]
-  );
+  const execLogin = useCallback(() => {
+    login({ baseUrl, token });
+    router.replace("/(app)");
+  }, [baseUrl, token]);
 
-  const styles: { title: StyleProp<typeof Text>, input: StyleProp<typeof TextInput> } = {
+  const styles: {
+    title: StyleProp<typeof Text>;
+    input: StyleProp<typeof TextInput>;
+  } = {
     title: {
       fontWeight: "bold",
       marginBottom: 15
@@ -36,10 +36,7 @@ const Login = () => {
 
   return (
     <MainView>
-      <Text
-        style={styles.title}
-        variant="headlineLarge"
-      >
+      <Text style={styles.title} variant="headlineLarge">
         Auff
       </Text>
 
@@ -69,7 +66,7 @@ const Login = () => {
         Login
       </Button>
     </MainView>
-  )
-}
+  );
+};
 
 export default Login;

@@ -20,7 +20,7 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
   const hideNotice = () => {
     setNotice(false);
     setText("");
-  }
+  };
 
   const show = (text: string) => {
     notificationAsync(NotificationFeedbackType.Success);
@@ -34,7 +34,7 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
     setText(text);
     setNotice(true);
     setTimeout(hideNotice, 2000);
-  }
+  };
 
   const styles: { bar: StyleProp<typeof Snackbar> } = {
     bar: {
@@ -49,17 +49,13 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
       {children}
 
       <Portal>
-        <Snackbar
-          style={styles.bar}
-          visible={notice}
-          onDismiss={hideNotice}
-        >
+        <Snackbar style={styles.bar} visible={notice} onDismiss={hideNotice}>
           {text}
         </Snackbar>
       </Portal>
     </ToastContext.Provider>
-  )
-}
+  );
+};
 
 export const useToast = () => {
   const context = useContext(ToastContext);
@@ -69,4 +65,4 @@ export const useToast = () => {
   }
 
   return context;
-}
+};
