@@ -260,12 +260,12 @@ const Index = () => {
     }
 
     const includedOnly = (account: TwoFAccount) =>
-      includedGroups.includes(account.id ?? -1) &&
-      !excludedGroups.includes(account.id ?? -1);
+      includedGroups.includes(account.group_id ?? -1) &&
+      !excludedGroups.includes(account.group_id ?? -1);
     const removeExcluded = (account: TwoFAccount) =>
-      !excludedGroups.includes(account.id ?? -1);
+      !excludedGroups.includes(account.group_id ?? -1);
     const createAccountPreview = (account: TwoFAccount) => (
-      <AccountPreview key={account.id ?? -1} account={account} />
+      <AccountPreview key={account.id} account={account} />
     );
 
     return accounts
