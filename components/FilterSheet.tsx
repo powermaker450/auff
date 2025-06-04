@@ -61,6 +61,8 @@ const FilterSheet = ({
       flex: 1,
       paddingTop: 10,
       alignItems: "center",
+      marginLeft: 10,
+      marginRight: 10,
       backgroundColor: theme.colors.surfaceVariant
     },
     handle: {

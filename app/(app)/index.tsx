@@ -1,42 +1,79 @@
 import { useApi } from "@/contexts/ApiProvider";
 import { StyleProp } from "@/util/StyleProp";
 import { Group, TwoFAccount } from "@povario/2fauth.js";
-import { ComponentProps, useEffect, useRef, useState } from "react";
+import {
+  ComponentProps,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 import { ScrollView, View } from "react-native";
 import {
   ActivityIndicator,
   Appbar,
   List,
   Modal,
-  Portal,
-  Tooltip,
-  useTheme
+  Text,
+  Tooltip
 } from "react-native-paper";
-import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSQLiteContext } from "expo-sqlite";
 import { useNetworkState } from "expo-network";
-import { useOtp } from "@/contexts/OtpProvider";
 import { router } from "expo-router";
 import TouchVib from "@/util/TouchVib";
 import { AxiosError } from "axios";
 import { useToast } from "@/contexts/ToastProvider";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import FilterSheet from "@/components/FilterSheet";
+import AccountPreview from "@/components/AccountPreview";
+import GroupSelect from "@/components/GroupSelect";
 
 const Index = () => {
   const db = useSQLiteContext();
   const toast = useToast();
   const network = useNetworkState();
-  const theme = useTheme();
-  const otp = useOtp();
 
-  const { api, baseUrl, logout } = useApi();
+  const { api, logout } = useApi();
   const { bottom } = useSafeAreaInsets();
   const [accounts, setAccounts] = useState<TwoFAccount<boolean>[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
-  const [selectedGroups, setSelectedGroups] = useState<number[]>([]);
+  const [includedGroups, setIncludedGroups] = useState<number[]>([]);
+  const [excludedGroups, setExcludedGroups] = useState<number[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+
+  const toggleIncluded = useCallback(
+    (groupId: number) => {
+      const filterWithoutTarget = (array: number[]) =>
+        array.filter(value => value !== groupId);
+
+      if (includedGroups.includes(groupId)) {
+        setIncludedGroups(filterWithoutTarget);
+        return;
+      }
+
+      setIncludedGroups(current => current.concat([groupId]));
+      setExcludedGroups(filterWithoutTarget);
+    },
+    [includedGroups, excludedGroups]
+  );
+
+  const toggleExcluded = useCallback(
+    (groupId: number) => {
+      const filterWithoutTarget = (array: number[]) =>
+        array.filter(value => value !== groupId);
+
+      if (excludedGroups.includes(groupId)) {
+        setExcludedGroups(filterWithoutTarget);
+        return;
+      }
+
+      setExcludedGroups(current => current.concat([groupId]));
+      setIncludedGroups(filterWithoutTarget);
+    },
+    [includedGroups, excludedGroups]
+  );
 
   const [sheetModal, setSheetModal] = useState(false);
   const sheet = useRef<BottomSheetModal>(null);
@@ -205,72 +242,36 @@ const Index = () => {
   }, [network]);
 
   const styles: {
-    account: StyleProp<(typeof List)["Item"]>;
     view: StyleProp<typeof View>;
     title: ComponentProps<(typeof List)["Item"]>["titleStyle"];
-    icon: StyleProp<typeof Image>;
   } = {
-    account: {
-      backgroundColor: theme.colors.surfaceVariant,
-      borderRadius: 20,
-      marginTop: 7,
-      marginBottom: 7,
-      width: "95%",
-      alignSelf: "center"
-    },
     view: {
       width: "100%",
       marginBottom: bottom * 7
     },
     title: {
       fontWeight: "bold"
-    },
-    icon: {
-      marginLeft: 15,
-      width: "10%",
-      height: "100%"
     }
   };
 
-  const mapAccount = (account: TwoFAccount) => {
-    const icon = () => (
-      <Image
-        source={baseUrl + `/storage/icons/${account.icon ?? "noicon.svg"}`}
-        style={styles.icon}
-      />
+  const accountList = useMemo(() => {
+    if (!accounts.length) {
+      return <ActivityIndicator animating={refreshing} />;
+    }
+
+    const includedOnly = (account: TwoFAccount) =>
+      includedGroups.includes(account.id ?? -1) &&
+      !excludedGroups.includes(account.id ?? -1);
+    const removeExcluded = (account: TwoFAccount) =>
+      !excludedGroups.includes(account.id ?? -1);
+    const createAccountPreview = (account: TwoFAccount) => (
+      <AccountPreview key={account.id ?? -1} account={account} />
     );
 
-    const openOtp = () => {
-      otp.setAccount(account.id!);
-      router.navigate("/account");
-    };
-
-    return (
-      <List.Item
-        style={styles.account}
-        key={account.id}
-        title={account.service ?? "[No Name]"}
-        description={account.account}
-        titleStyle={styles.title}
-        left={icon}
-        onPress={openOtp}
-      />
-    );
-  };
-
-  useEffect(() => console.log(selectedGroups), [selectedGroups]);
-
-  const loading = <ActivityIndicator animating={refreshing} />;
-  const accountList =
-    accounts.length === 0
-      ? loading
-      : selectedGroups.length === 0
-        ? accounts.map(mapAccount)
-        : accounts.map(account =>
-            selectedGroups.includes(account.group_id ?? 0)
-              ? mapAccount(account)
-              : undefined
-          );
+    return accounts
+      .filter(includedGroups.length ? includedOnly : removeExcluded)
+      .map(createAccountPreview);
+  }, [accounts, includedGroups, excludedGroups]);
 
   return (
     <>
@@ -315,9 +316,23 @@ const Index = () => {
         <ScrollView>{accountList}</ScrollView>
       </View>
 
-      {/* Putting the filter sheet inside the modal doesn't work for some reason... */}
-      <FilterSheet ref={sheet} onAnimate={handleSheetAnimate} />
+      <FilterSheet ref={sheet} onAnimate={handleSheetAnimate}>
+        <Text variant="labelLarge">Tap to include, long press to exclude</Text>
+        {groups
+          .filter(group => group.id !== 0)
+          .map(group => (
+            <GroupSelect
+              key={group.id}
+              group={group}
+              includedGroups={includedGroups}
+              excludedGroups={excludedGroups}
+              toggleIncluded={toggleIncluded}
+              toggleExcluded={toggleExcluded}
+            />
+          ))}
+      </FilterSheet>
       <Modal visible={sheetModal} onDismiss={closeSheet}>
+        {/* Modals don't like to be empty... */}
         <></>
       </Modal>
     </>
