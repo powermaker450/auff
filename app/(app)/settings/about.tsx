@@ -2,8 +2,8 @@ import MainView from "@/components/MainView";
 import TouchVib from "@/util/TouchVib";
 import { router } from "expo-router";
 import { useMemo } from "react";
-import { View } from "react-native";
-import { Appbar, Text, useTheme } from "react-native-paper";
+import { Linking, View } from "react-native";
+import { Appbar, Button, Text, useTheme } from "react-native-paper";
 import * as Application from "expo-application";
 import { StyleProp } from "@/util/StyleProp";
 
@@ -73,7 +73,18 @@ const About = () => {
         <Appbar.Content title="About" />
       </Appbar.Header>
 
-      <MainView>{aboutText}</MainView>
+      <MainView>
+        {aboutText}
+
+        <Button
+          onPressIn={TouchVib}
+          onPress={() =>
+            Linking.openURL("https://github.com/powermaker450/auff")
+          }
+        >
+          Source Code
+        </Button>
+      </MainView>
     </>
   );
 };
