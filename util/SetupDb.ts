@@ -30,5 +30,13 @@ export default async function SetupDb(db: SQLiteDatabase) {
       name TEXT NOT NULL,
       twofaccounts_count INTEGER NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS config (
+      key TEXT PRIMARY KEY NOT NULL,
+      value TEXT
+    );
+
+    INSERT OR IGNORE INTO config VALUES ('includedGroups', '[]');
+    INSERT OR IGNORE INTO config VALUES ('excludedGroups', '[]');
   `);
 }

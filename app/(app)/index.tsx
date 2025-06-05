@@ -30,6 +30,8 @@ import FilterSheet from "@/components/FilterSheet";
 import AccountPreview from "@/components/AccountPreview";
 import GroupSelect from "@/components/GroupSelect";
 
+type ValueResult = { value: string };
+
 const Index = () => {
   const db = useSQLiteContext();
   const toast = useToast();
@@ -41,6 +43,7 @@ const Index = () => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [includedGroups, setIncludedGroups] = useState<number[]>([]);
   const [excludedGroups, setExcludedGroups] = useState<number[]>([]);
+  const [localGroupsReady, setLocalGroupsReady] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const toggleIncluded = useCallback(
@@ -237,9 +240,83 @@ const Index = () => {
     setRefreshing(false);
   }
 
+  // Get and set group and account data
   useEffect(() => {
     getData().catch(console.error);
   }, [network]);
+
+  // Get selected groups from the local database
+  useEffect(() => {
+    async function setSelectedGroups() {
+      const emptyArray = "[]";
+      const localIncludedJson = await db.getFirstAsync<ValueResult>(
+        "SELECT value FROM config WHERE key = 'includedGroups'"
+      );
+      const localExcludedJson = await db.getFirstAsync<ValueResult>(
+        "SELECT value FROM config WHERE key = 'excludedGroups'"
+      );
+
+      const localIncluded: number[] = JSON.parse(
+        localIncludedJson?.value ?? emptyArray
+      );
+      const localExcluded: number[] = JSON.parse(
+        localExcludedJson?.value ?? emptyArray
+      );
+
+      localIncluded.length && setIncludedGroups(localIncluded);
+      localExcluded.length && setExcludedGroups(localExcluded);
+
+      setLocalGroupsReady(true);
+    }
+
+    setSelectedGroups();
+  }, []);
+
+  // Update local database with included groups
+  useEffect(() => {
+    if (!localGroupsReady) {
+      return;
+    }
+
+    async function update() {
+      const updateIncludedGroups = await db.prepareAsync(
+        "UPDATE config SET value = $groups WHERE key = 'includedGroups'"
+      );
+
+      try {
+        await updateIncludedGroups.executeAsync({
+          $groups: JSON.stringify(includedGroups)
+        });
+      } finally {
+        await updateIncludedGroups.finalizeAsync();
+      }
+    }
+
+    update();
+  }, [includedGroups, localGroupsReady]);
+
+  // Update local database with excluded groups
+  useEffect(() => {
+    if (!localGroupsReady) {
+      return;
+    }
+
+    async function update() {
+      const updateExcludedGroups = await db.prepareAsync(
+        "UPDATE config SET value = $groups WHERE key = 'excludedGroups'"
+      );
+
+      try {
+        await updateExcludedGroups.executeAsync({
+          $groups: JSON.stringify(excludedGroups)
+        });
+      } finally {
+        await updateExcludedGroups.finalizeAsync();
+      }
+    }
+
+    update();
+  }, [excludedGroups, localGroupsReady]);
 
   const styles: {
     view: StyleProp<typeof View>;
