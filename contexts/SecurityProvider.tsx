@@ -109,11 +109,9 @@ export const SecurityProvider = ({ children }: SecurityProviderProps) => {
       if (useBiometricsLocal?.value === "1") {
         authenticate();
       }
-
-      return useBiometricsLocal?.value === "1";
     }
 
-    config().then(console.log);
+    config()
   }, []);
 
   const styles = useMemo<SecurityStyleSheet>(
