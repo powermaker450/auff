@@ -58,7 +58,7 @@ const Security = () => {
         );
     }
 
-    config().then(console.log);
+    config();
     checkHardware();
   }, []);
 
@@ -83,7 +83,7 @@ const Security = () => {
 
       try {
         await updateUseBiometrics.executeAsync({
-          $value: useBiometrics ? "1" : "0"
+          $value: useBiometrics ? 1 : 0
         });
       } finally {
         await updateUseBiometrics.finalizeAsync();

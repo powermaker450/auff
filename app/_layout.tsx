@@ -9,6 +9,7 @@ import SetupDb from "@/util/SetupDb";
 import { ToastProvider } from "@/contexts/ToastProvider";
 import { OtpProvider } from "@/contexts/OtpProvider";
 import { StyleProp } from "@/util/StyleProp";
+import { SecurityProvider } from "@/contexts/SecurityProvider";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -45,9 +46,11 @@ export default function RootLayout() {
         <ToastProvider>
           <ApiProvider>
             <OtpProvider>
-              <View style={styles.view}>
-                <Stack screenOptions={styles.stack} />
-              </View>
+              <SecurityProvider>
+                <View style={styles.view}>
+                  <Stack screenOptions={styles.stack} />
+                </View>
+              </SecurityProvider>
             </OtpProvider>
           </ApiProvider>
         </ToastProvider>

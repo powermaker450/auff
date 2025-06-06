@@ -44,6 +44,5 @@ export default async function SetupDb(db: SQLiteDatabase) {
     INSERT OR IGNORE INTO config VALUES ('excludedGroups', '[]');
 
     INSERT OR IGNORE INTO config VALUES ('useBiometrics', '0');
-    UPDATE config SET value = '0' WHERE key = 'useBiometrics';
   `);
 }
