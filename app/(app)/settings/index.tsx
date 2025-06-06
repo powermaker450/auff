@@ -4,16 +4,9 @@ import { useApi } from "@/contexts/ApiProvider";
 import { StyleProp } from "@/util/StyleProp";
 import TouchVib from "@/util/TouchVib";
 import { router } from "expo-router";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { ScrollView } from "react-native-gesture-handler";
-import {
-  Appbar,
-  Button,
-  Dialog,
-  Portal,
-  Text,
-  useTheme
-} from "react-native-paper";
+import { Appbar, Button, useTheme } from "react-native-paper";
 
 interface SettingsStyleSheet {
   button: StyleProp<typeof Button>;
@@ -22,10 +15,6 @@ interface SettingsStyleSheet {
 const Settings = () => {
   const theme = useTheme();
   const { logout } = useApi();
-
-  const [logoutVisible, setLogoutVisible] = useState(false);
-  const showLogoutDialog = () => setLogoutVisible(true);
-  const hideLogoutDialog = () => setLogoutVisible(false);
 
   const styles = useMemo<SettingsStyleSheet>(
     () => ({
@@ -54,33 +43,6 @@ const Settings = () => {
     }
   ];
 
-  const execLogout = () => {
-    logout();
-    router.replace("/login");
-  };
-
-  const logoutDialog = (
-    <Portal>
-      <Dialog visible={logoutVisible} onDismiss={hideLogoutDialog}>
-        <Dialog.Title>Log out</Dialog.Title>
-
-        <Dialog.Content>
-          <Text>Are you sure you want to log out?</Text>
-        </Dialog.Content>
-
-        <Dialog.Actions>
-          <Button onPressIn={TouchVib} onPress={hideLogoutDialog}>
-            Cancel
-          </Button>
-
-          <Button onPressIn={TouchVib} onPress={execLogout}>
-            Log out
-          </Button>
-        </Dialog.Actions>
-      </Dialog>
-    </Portal>
-  );
-
   return (
     <>
       <Appbar.Header>
@@ -104,14 +66,12 @@ const Settings = () => {
             style={styles.button}
             mode="contained"
             onPressIn={TouchVib}
-            onPress={showLogoutDialog}
+            onPress={logout}
           >
             Log out
           </Button>
         </MainView>
       </ScrollView>
-
-      {logoutDialog}
     </>
   );
 };

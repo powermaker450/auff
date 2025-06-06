@@ -10,6 +10,9 @@ import {
 } from "react";
 import { AxiosError } from "axios";
 import { useToast } from "./ToastProvider";
+import { Button, Dialog, Portal, Text } from "react-native-paper";
+import TouchVib from "@/util/TouchVib";
+import { router } from "expo-router";
 
 interface ApiProviderProps {
   children: ReactNode;
@@ -38,6 +41,10 @@ export const ApiProvider = ({ children }: ApiProviderProps) => {
   const [baseUrl, setBaseUrl] = useState("");
   const [loggedIn, setLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [logoutVisible, setLogoutVisible] = useState(false);
+  const showLogoutDialog = () => setLogoutVisible(true);
+  const hideLogoutDialog = () => setLogoutVisible(false);
+
   const login = ({ baseUrl, token }: SetupApiProps) => {
     SecureStoreWrapper.setItem("token", token);
     SecureStoreWrapper.setItem("baseUrl", baseUrl);
@@ -47,13 +54,26 @@ export const ApiProvider = ({ children }: ApiProviderProps) => {
   };
 
   const logout = async () => {
+    setLogoutVisible(false);
+
     setApi(new TwoAuthApi("http://localhost", ""));
     setBaseUrl("");
     setLoggedIn(false);
 
     await SecureStoreWrapper.setItem("token", "");
     await SecureStoreWrapper.setItem("baseUrl", "");
+
     await db.execAsync("DELETE FROM accounts");
+    await db.execAsync("DELETE FROM groups");
+    await db.execAsync(`
+      DELETE FROM accounts;
+      DELETE FROM groups;
+
+      UPDATE config SET value = '[]' WHERE key = 'includedGroups' OR key = 'excludedGroups';
+      UPDATE config SET value = '0' WHERE key = 'useBiometrics';
+    `);
+
+    router.replace("/login");
   };
 
   const getLocalCredentials = async () => {
@@ -99,17 +119,40 @@ export const ApiProvider = ({ children }: ApiProviderProps) => {
     checkLoggedIn();
   }, [api]);
 
+  const logoutDialog = (
+    <Portal>
+      <Dialog visible={logoutVisible} onDismiss={hideLogoutDialog}>
+        <Dialog.Title>Log out</Dialog.Title>
+
+        <Dialog.Content>
+          <Text>Are you sure you want to log out?</Text>
+        </Dialog.Content>
+
+        <Dialog.Actions>
+          <Button onPressIn={TouchVib} onPress={hideLogoutDialog}>
+            Cancel
+          </Button>
+
+          <Button onPressIn={TouchVib} onPress={logout}>
+            Log out
+          </Button>
+        </Dialog.Actions>
+      </Dialog>
+    </Portal>
+  );
+
   return (
     <ApiContext.Provider
       value={{
         api,
         baseUrl,
         login,
-        logout,
+        logout: showLogoutDialog,
         loggedIn,
         loading
       }}
     >
+      {logoutDialog}
       {children}
     </ApiContext.Provider>
   );
