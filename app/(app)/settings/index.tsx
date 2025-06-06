@@ -43,6 +43,11 @@ const Settings = () => {
       navigateTo: "/settings/appearance"
     },
     {
+      title: "Security",
+      icon: "lock",
+      navigateTo: "/settings/security"
+    },
+    {
       title: "About",
       icon: "information",
       navigateTo: "/settings/about"

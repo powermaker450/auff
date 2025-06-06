@@ -2,6 +2,10 @@ import * as Crypto from "expo-crypto";
 import { type SQLiteDatabase } from "expo-sqlite";
 import SecureStoreWrapper from "./SecureStoreWrapper";
 
+export interface UseBiometricsResult {
+  value: "0" | "1";
+}
+
 export default async function SetupDb(db: SQLiteDatabase) {
   let key = await SecureStoreWrapper.getItem("cipher");
 
@@ -38,5 +42,8 @@ export default async function SetupDb(db: SQLiteDatabase) {
 
     INSERT OR IGNORE INTO config VALUES ('includedGroups', '[]');
     INSERT OR IGNORE INTO config VALUES ('excludedGroups', '[]');
+
+    INSERT OR IGNORE INTO config VALUES ('useBiometrics', '0');
+    UPDATE config SET value = '0' WHERE key = 'useBiometrics';
   `);
 }
