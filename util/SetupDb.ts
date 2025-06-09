@@ -6,6 +6,8 @@ export interface UseBiometricsResult {
   value: "0" | "1";
 }
 
+export type BinaryDbResult = UseBiometricsResult;
+
 export default async function SetupDb(db: SQLiteDatabase) {
   let key = await SecureStoreWrapper.getItem("cipher");
 
@@ -44,5 +46,7 @@ export default async function SetupDb(db: SQLiteDatabase) {
     INSERT OR IGNORE INTO config VALUES ('excludedGroups', '[]');
 
     INSERT OR IGNORE INTO config VALUES ('useBiometrics', '0');
+
+    INSERT OR IGNORE INTO config VALUES ('showOtpCode', '1');
   `);
 }

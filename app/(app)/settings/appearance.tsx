@@ -1,25 +1,59 @@
-import MainView from "@/components/MainView";
-import { StyleProp } from "@/util/StyleProp";
+import type { BinaryDbResult } from "@/util/SetupDb";
 import TouchVib from "@/util/TouchVib";
-// import { useMaterial3Theme } from "@pchmn/expo-material3-theme";
 import { router } from "expo-router";
-import { Appbar, Text } from "react-native-paper";
-
-interface AppearanceStyleSheet {
-  text: StyleProp<typeof Text>;
-}
+import { useSQLiteContext } from "expo-sqlite";
+import { useEffect, useState } from "react";
+import { ScrollView } from "react-native-gesture-handler";
+import { Appbar, List, Switch } from "react-native-paper";
 
 const Appearance = () => {
-  // const { updateTheme, resetTheme } = useMaterial3Theme()
-
-  const styles: AppearanceStyleSheet = {
-    text: {
-      fontWeight: "bold"
-    }
+  const [localDataReady, setLocalDataReady] = useState(false);
+  const [showOtpCode, setShowOtpCode] = useState(false);
+  const toggleShowOtpCode = () => {
+    TouchVib();
+    setShowOtpCode(current => !current);
   };
 
-  // const enableMaterialYou = () => resetTheme();
-  // const disableMaterialYou = () => updateTheme("#664ea3");
+  const db = useSQLiteContext();
+
+  useEffect(() => {
+    async function config() {
+      const showOtpCodeLocal = await db.getFirstAsync<BinaryDbResult>(
+        "SELECT value FROM config WHERE key = 'showOtpCode'"
+      );
+      setShowOtpCode(showOtpCodeLocal?.value === "1");
+
+      setLocalDataReady(true);
+    }
+
+    config();
+  }, []);
+
+  useEffect(() => {
+    if (!localDataReady) {
+      return;
+    }
+
+    async function update() {
+      const updateShowOtpCode = await db.prepareAsync(
+        "UPDATE config SET value = $value WHERE key = 'showOtpCode'"
+      );
+
+      try {
+        await updateShowOtpCode.executeAsync({
+          $value: showOtpCode ? "1" : "0"
+        });
+      } finally {
+        await updateShowOtpCode.finalizeAsync();
+      }
+    }
+
+    update();
+  }, [showOtpCode, localDataReady]);
+
+  const showOtpCodeSwitch = () => (
+    <Switch value={showOtpCode} onValueChange={toggleShowOtpCode} />
+  );
 
   return (
     <>
@@ -29,11 +63,14 @@ const Appearance = () => {
         <Appbar.BackAction onPressIn={TouchVib} onPress={router.back} />
       </Appbar.Header>
 
-      <MainView>
-        <Text style={styles.text} variant="bodyLarge">
-          Coming soon...
-        </Text>
-      </MainView>
+      <ScrollView>
+        <List.Item
+          title="Show OTP Code"
+          description="Show or hide the OTP code when initally viewing the account"
+          onPress={toggleShowOtpCode}
+          right={showOtpCodeSwitch}
+        />
+      </ScrollView>
     </>
   );
 };
