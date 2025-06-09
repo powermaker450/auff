@@ -81,9 +81,13 @@ const Account = () => {
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
+  const icon = otp.icon?.endsWith("noicon.svg") ? undefined : (
+    <Image source={otp.icon} style={styles.icon} />
+  );
+
   const otpView = (
     <Surface style={styles.view} elevation={5}>
-      {otp.icon && <Image source={otp.icon} style={styles.icon} />}
+      {icon}
 
       <Text style={styles.title} variant="headlineLarge">
         {otp.serviceName}

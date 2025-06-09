@@ -39,12 +39,15 @@ const AccountPreview = ({ account }: AccountPreviewProps) => {
     }
   };
 
-  const icon = () => (
-    <Image
-      source={baseUrl + `/storage/icons/${account.icon ?? "noicon.svg"}`}
-      style={styles.icon}
-    />
-  );
+  const icon = () =>
+    account.icon ? (
+      <Image
+        source={baseUrl + `/storage/icons/${account.icon}`}
+        style={styles.icon}
+      />
+    ) : (
+      <List.Icon icon="account-circle" style={{ marginLeft: 20 }} />
+    );
 
   const openOtp = () => {
     otp.setAccount(account.id!);
