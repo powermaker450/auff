@@ -7,36 +7,41 @@ import { Appbar, Button, Text, useTheme } from "react-native-paper";
 import * as Application from "expo-application";
 import { StyleProp } from "@/util/StyleProp";
 
+interface AboutStyleSheet {
+  about: StyleProp<typeof View>;
+  aboutTitle: StyleProp<typeof Text>;
+  aboutSubtitle: StyleProp<typeof Text>;
+  aboutCode: StyleProp<typeof Text>;
+  aboutDescription: StyleProp<typeof Text>;
+}
+
 const About = () => {
   const theme = useTheme();
 
-  const styles: {
-    about: StyleProp<typeof View>;
-    aboutTitle: StyleProp<typeof Text>;
-    aboutSubtitle: StyleProp<typeof Text>;
-    aboutCode: StyleProp<typeof Text>;
-    aboutDescription: StyleProp<typeof Text>;
-  } = {
-    about: {
-      width: "50%",
-      marginBottom: 25,
-      alignItems: "center"
-    },
-    aboutTitle: {
-      fontWeight: "bold"
-    },
-    aboutSubtitle: {
-      color: useMemo(() => theme.colors.onSurfaceDisabled, [theme])
-    },
-    aboutCode: {
-      color: useMemo(() => theme.colors.primary, [theme]),
-      fontWeight: "bold"
-    },
-    aboutDescription: {
-      marginTop: 25,
-      textAlign: "center"
-    }
-  };
+  const styles = useMemo<AboutStyleSheet>(
+    () => ({
+      about: {
+        width: "50%",
+        marginBottom: 25,
+        alignItems: "center"
+      },
+      aboutTitle: {
+        fontWeight: "bold"
+      },
+      aboutSubtitle: {
+        color: theme.colors.onSurfaceDisabled
+      },
+      aboutCode: {
+        color: theme.colors.primary,
+        fontWeight: "bold"
+      },
+      aboutDescription: {
+        marginTop: 25,
+        textAlign: "center"
+      }
+    }),
+    [theme]
+  );
 
   const aboutText = (
     <View style={styles.about}>

@@ -4,26 +4,21 @@ import { useApi } from "@/contexts/ApiProvider";
 import { StyleProp } from "@/util/StyleProp";
 import TouchVib from "@/util/TouchVib";
 import { router } from "expo-router";
-import { useMemo } from "react";
 import { ScrollView } from "react-native-gesture-handler";
-import { Appbar, Button, useTheme } from "react-native-paper";
+import { Appbar, Button } from "react-native-paper";
 
 interface SettingsStyleSheet {
   button: StyleProp<typeof Button>;
 }
 
 const Settings = () => {
-  const theme = useTheme();
   const { logout } = useApi();
 
-  const styles = useMemo<SettingsStyleSheet>(
-    () => ({
-      button: {
-        marginTop: 10
-      }
-    }),
-    [theme]
-  );
+  const styles: SettingsStyleSheet = {
+    button: {
+      marginTop: 10
+    }
+  };
 
   const pages: PagePreviewProps[] = [
     {
