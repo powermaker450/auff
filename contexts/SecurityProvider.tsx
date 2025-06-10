@@ -1,4 +1,4 @@
-import { UseBiometricsResult } from "@/util/SetupDb";
+import { ConfigResult } from "@/util/SetupDb";
 import { StyleProp } from "@/util/StyleProp";
 import TouchVib from "@/util/TouchVib";
 import * as LocalAuthentication from "expo-local-authentication";
@@ -102,7 +102,7 @@ export const SecurityProvider = ({ children }: SecurityProviderProps) => {
 
   useEffect(() => {
     async function config() {
-      const useBiometricsLocal = await db.getFirstAsync<UseBiometricsResult>(
+      const useBiometricsLocal = await db.getFirstAsync<ConfigResult<"useBiometrics">>(
         "SELECT value FROM config WHERE key = 'useBiometrics'"
       );
 
