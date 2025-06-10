@@ -428,6 +428,7 @@ const Index = () => {
           value={searchText}
           onChangeText={setSearchText}
           placeholder="Search accounts..."
+          onClearIconPress={TouchVib}
         />
         <ScrollView>{accountList}</ScrollView>
       </View>
