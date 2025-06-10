@@ -362,9 +362,11 @@ const Index = () => {
       return account.account.toLowerCase().includes(text) || account.service?.toLowerCase().includes(text);
     }
 
+    // Filtered accounts based on account groups
     const filtered = accounts
       .filter(includedGroups.length ? includedOnly : removeExcluded);
 
+    // If there is search text that has no trailing spaces, filter the accounts by the search query
     return searchText.trim()
       ? filtered.filter(filterSearched).map(createAccountPreview)
       : filtered.map(createAccountPreview);
