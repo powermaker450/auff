@@ -15,6 +15,7 @@ import {
   Appbar,
   List,
   Modal,
+  Searchbar,
   Text,
   Tooltip
 } from "react-native-paper";
@@ -45,6 +46,7 @@ const Index = () => {
   const [excludedGroups, setExcludedGroups] = useState<number[]>([]);
   const [localGroupsReady, setLocalGroupsReady] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchText, setSearchText] = useState("");
 
   const toggleIncluded = useCallback(
     (groupId: number) => {
@@ -321,13 +323,19 @@ const Index = () => {
   const styles: {
     view: StyleProp<typeof View>;
     title: ComponentProps<(typeof List)["Item"]>["titleStyle"];
+    searchBar: StyleProp<typeof Searchbar>;
   } = {
     view: {
       width: "100%",
-      marginBottom: bottom * 7
+      marginBottom: bottom * 11,
     },
     title: {
       fontWeight: "bold"
+    },
+    searchBar: {
+      width: "95%",
+      alignSelf: "center",
+      marginBottom: 5
     }
   };
 
@@ -344,11 +352,18 @@ const Index = () => {
     const createAccountPreview = (account: TwoFAccount) => (
       <AccountPreview key={account.id} account={account} />
     );
+    const filterSearched = (account: TwoFAccount) => {
+      const text = searchText.trim().toLowerCase();
+      return account.account.toLowerCase().includes(text) || account.service?.toLowerCase().includes(text);
+    }
 
-    return accounts
-      .filter(includedGroups.length ? includedOnly : removeExcluded)
-      .map(createAccountPreview);
-  }, [accounts, includedGroups, excludedGroups]);
+    const filtered = accounts
+      .filter(includedGroups.length ? includedOnly : removeExcluded);
+
+    return searchText.trim()
+      ? filtered.filter(filterSearched).map(createAccountPreview)
+      : filtered.map(createAccountPreview);
+  }, [accounts, includedGroups, excludedGroups, searchText]);
 
   return (
     <>
@@ -387,9 +402,17 @@ const Index = () => {
             onLongPress={TouchVib}
           />
         </Tooltip>
+
       </Appbar.Header>
 
+
       <View style={styles.view}>
+        <Searchbar
+          style={styles.searchBar}
+          value={searchText}
+          onChangeText={setSearchText}
+          placeholder="Search accounts..."
+        />
         <ScrollView>{accountList}</ScrollView>
       </View>
 
