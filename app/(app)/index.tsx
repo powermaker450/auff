@@ -33,6 +33,12 @@ import GroupSelect from "@/components/GroupSelect";
 
 type ValueResult = { value: string };
 
+interface IndexStyleSheet {
+  view: StyleProp<typeof View>;
+  title: ComponentProps<(typeof List)["Item"]>["titleStyle"];
+  searchBar: StyleProp<typeof Searchbar>;
+}
+
 const Index = () => {
   const db = useSQLiteContext();
   const toast = useToast();
@@ -320,24 +326,23 @@ const Index = () => {
     update();
   }, [excludedGroups, localGroupsReady]);
 
-  const styles: {
-    view: StyleProp<typeof View>;
-    title: ComponentProps<(typeof List)["Item"]>["titleStyle"];
-    searchBar: StyleProp<typeof Searchbar>;
-  } = {
-    view: {
-      width: "100%",
-      marginBottom: bottom * 11,
-    },
-    title: {
-      fontWeight: "bold"
-    },
-    searchBar: {
-      width: "95%",
-      alignSelf: "center",
-      marginBottom: 5
-    }
-  };
+  const styles = useMemo<IndexStyleSheet>(
+    () => ({
+      view: {
+        width: "100%",
+        marginBottom: bottom * 11,
+      },
+      title: {
+        fontWeight: "bold"
+      },
+      searchBar: {
+        width: "95%",
+        alignSelf: "center",
+        marginBottom: 5
+      }
+    }),
+    [bottom]
+  );
 
   const accountList = useMemo(() => {
     if (!accounts.length) {
