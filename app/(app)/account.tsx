@@ -34,9 +34,11 @@ const Account = () => {
     navigation.addListener("beforeRemove", otp.clearAccount);
 
     async function config() {
-      const showOtpCodeLocal = await db.getFirstAsync<BinaryDbResult>("SELECT value FROM config WHERE key = 'showOtpCode'");
+      const showOtpCodeLocal = await db.getFirstAsync<BinaryDbResult>(
+        "SELECT value FROM config WHERE key = 'showOtpCode'"
+      );
       setShowOtpCode(showOtpCodeLocal?.value === "1");
-    };
+    }
 
     config();
   }, []);
@@ -60,7 +62,7 @@ const Account = () => {
     },
     code: {
       fontWeight: "bold",
-      color: theme.colors.primary,
+      color: theme.colors.primary
     },
     progressBar: {
       height: 10,
@@ -114,9 +116,7 @@ const Account = () => {
         {otp.serviceName}
       </Text>
 
-      <Text variant="headlineSmall">
-        {otp.accountName}
-      </Text>
+      <Text variant="headlineSmall">{otp.accountName}</Text>
 
       <ProgressBar style={styles.progressBar} progress={progress} />
 

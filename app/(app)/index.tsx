@@ -330,7 +330,7 @@ const Index = () => {
     () => ({
       view: {
         width: "100%",
-        marginBottom: bottom * 11,
+        marginBottom: bottom * 11
       },
       title: {
         fontWeight: "bold"
@@ -359,12 +359,16 @@ const Index = () => {
     );
     const filterSearched = (account: TwoFAccount) => {
       const text = searchText.trim().toLowerCase();
-      return account.account.toLowerCase().includes(text) || account.service?.toLowerCase().includes(text);
-    }
+      return (
+        account.account.toLowerCase().includes(text) ||
+        account.service?.toLowerCase().includes(text)
+      );
+    };
 
     // Filtered accounts based on account groups
-    const filtered = accounts
-      .filter(includedGroups.length ? includedOnly : removeExcluded);
+    const filtered = accounts.filter(
+      includedGroups.length ? includedOnly : removeExcluded
+    );
 
     // If there is search text that has no trailing spaces, filter the accounts by the search query
     return searchText.trim()
@@ -409,9 +413,7 @@ const Index = () => {
             onLongPress={TouchVib}
           />
         </Tooltip>
-
       </Appbar.Header>
-
 
       <View style={styles.view}>
         <Searchbar

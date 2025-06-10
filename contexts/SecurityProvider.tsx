@@ -111,7 +111,7 @@ export const SecurityProvider = ({ children }: SecurityProviderProps) => {
       }
     }
 
-    config()
+    config();
   }, []);
 
   const styles = useMemo<SecurityStyleSheet>(
