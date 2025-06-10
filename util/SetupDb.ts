@@ -2,11 +2,28 @@ import * as Crypto from "expo-crypto";
 import { type SQLiteDatabase } from "expo-sqlite";
 import SecureStoreWrapper from "./SecureStoreWrapper";
 
-export interface UseBiometricsResult {
-  value: "0" | "1";
+export type ConfigKey = "includedGroups" | "excludedGroups" | "useBiometrics" | "showOtpCode";
+
+type ConfigBinaryOption = "0" | "1";
+
+export type ConfigOption<T extends ConfigKey | unknown = unknown> = 
+  T extends "useBiometrics" | "showOtpCode" ? ConfigBinaryOption
+  : string;
+
+export interface ConfigResult<K extends ConfigKey> {
+  key: K;
+  value: ConfigOption<K>;
 }
 
-export type BinaryDbResult = UseBiometricsResult;
+export enum PendingReason {
+  Create,
+  Delete
+}
+
+export interface PendingResult {
+  id: number;
+  action: PendingReason;
+}
 
 export default async function SetupDb(db: SQLiteDatabase) {
   let key = await SecureStoreWrapper.getItem("cipher");
@@ -40,6 +57,12 @@ export default async function SetupDb(db: SQLiteDatabase) {
     CREATE TABLE IF NOT EXISTS config (
       key TEXT PRIMARY KEY NOT NULL,
       value TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS pending (
+      id INTEGER PRIMARY KEY NOT NULL,
+      action INTEGER NOT NULL,
+      FOREIGN KEY(id) REFERENCES accounts(id)
     );
 
     INSERT OR IGNORE INTO config VALUES ('includedGroups', '[]');

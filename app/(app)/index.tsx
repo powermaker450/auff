@@ -30,6 +30,7 @@ import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import FilterSheet from "@/components/FilterSheet";
 import AccountPreview from "@/components/AccountPreview";
 import GroupSelect from "@/components/GroupSelect";
+import { PendingReason, PendingResult } from "@/util/SetupDb";
 
 type ValueResult = { value: string };
 
@@ -107,6 +108,7 @@ const Index = () => {
     const localAccounts = await db.getAllAsync<TwoFAccount<true>>(
       "SELECT * FROM accounts"
     );
+    const pendingAccounts = await db.getAllAsync<PendingResult>("SELECT * FROM pending");
 
     // If we are offline, just use the data in the local DB
     if (!network.isInternetReachable) {
@@ -157,11 +159,16 @@ const Index = () => {
     }
 
     // Check if any server accounts have been deleted and sync that to the local DB
+    // Additionally, if a local account is pending creation, don't delete it because that would be bad
     try {
       const localIds = localAccounts.map(account => account.id);
       const serverIds = serverAccounts.map(account => account.id);
 
       for (const $id of localIds) {
+        if (pendingAccounts.findIndex(pending => pending.id === $id && pending.action === PendingReason.Create) !== -1) {
+          continue;
+        }
+
         !serverIds.includes($id) && (await deleteAccount.executeAsync({ $id }));
       }
     } finally {
