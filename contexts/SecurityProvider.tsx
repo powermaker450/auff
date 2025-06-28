@@ -120,9 +120,9 @@ export const SecurityProvider = ({ children }: SecurityProviderProps) => {
 
   useEffect(() => {
     async function config() {
-      const useBiometricsLocal = await db.getFirstAsync<ConfigResult<"useBiometrics">>(
-        "SELECT value FROM config WHERE key = 'useBiometrics'"
-      );
+      const useBiometricsLocal = await db.getFirstAsync<
+        ConfigResult<"useBiometrics">
+      >("SELECT value FROM config WHERE key = 'useBiometrics'");
 
       if (useBiometricsLocal?.value === "1") {
         authenticate();

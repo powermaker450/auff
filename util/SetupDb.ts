@@ -20,12 +20,18 @@ import * as Crypto from "expo-crypto";
 import { type SQLiteDatabase } from "expo-sqlite";
 import SecureStoreWrapper from "./SecureStoreWrapper";
 
-export type ConfigKey = "includedGroups" | "excludedGroups" | "useBiometrics" | "showOtpCode";
+export type ConfigKey =
+  | "includedGroups"
+  | "excludedGroups"
+  | "useBiometrics"
+  | "showOtpCode";
 
 type ConfigBinaryOption = "0" | "1";
 
-export type ConfigOption<T extends ConfigKey | unknown = unknown> = 
-  T extends "useBiometrics" | "showOtpCode" ? ConfigBinaryOption
+export type ConfigOption<T extends ConfigKey | unknown = unknown> = T extends
+  | "useBiometrics"
+  | "showOtpCode"
+  ? ConfigBinaryOption
   : string;
 
 export interface ConfigResult<K extends ConfigKey> {

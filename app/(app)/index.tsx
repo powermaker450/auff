@@ -126,7 +126,9 @@ const Index = () => {
     const localAccounts = await db.getAllAsync<TwoFAccount<true>>(
       "SELECT * FROM accounts"
     );
-    const pendingAccounts = await db.getAllAsync<PendingResult>("SELECT * FROM pending");
+    const pendingAccounts = await db.getAllAsync<PendingResult>(
+      "SELECT * FROM pending"
+    );
 
     // If we are offline, just use the data in the local DB
     if (!network.isInternetReachable) {
@@ -183,7 +185,12 @@ const Index = () => {
       const serverIds = serverAccounts.map(account => account.id);
 
       for (const $id of localIds) {
-        if (pendingAccounts.findIndex(pending => pending.id === $id && pending.action === PendingReason.Create) !== -1) {
+        if (
+          pendingAccounts.findIndex(
+            pending =>
+              pending.id === $id && pending.action === PendingReason.Create
+          ) !== -1
+        ) {
           continue;
         }
 
