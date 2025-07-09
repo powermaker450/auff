@@ -21,7 +21,7 @@ import { useOtp } from "@/contexts/OtpProvider";
 import { StyleProp } from "@/util/StyleProp";
 import TouchVib from "@/util/TouchVib";
 import { router, useNavigation } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Appbar,
   IconButton,
@@ -37,6 +37,14 @@ import { useToast } from "@/contexts/ToastProvider";
 import { Image } from "expo-image";
 import { useSQLiteContext } from "expo-sqlite";
 import { ConfigResult } from "@/util/SetupDb";
+
+interface AccountStyleSheet {
+  view: StyleProp<typeof Surface>;
+  title: StyleProp<typeof Text>;
+  code: StyleProp<typeof Text>;
+  progressBar: StyleProp<typeof ProgressBar>;
+  icon: StyleProp<typeof Image>;
+}
 
 const Account = () => {
   const db = useSQLiteContext();
@@ -61,38 +69,35 @@ const Account = () => {
     config();
   }, []);
 
-  const styles: {
-    view: StyleProp<typeof Surface>;
-    title: StyleProp<typeof Text>;
-    code: StyleProp<typeof Text>;
-    progressBar: StyleProp<typeof ProgressBar>;
-    icon: StyleProp<typeof Image>;
-  } = {
-    view: {
-      height: "50%",
-      width: "95%",
-      borderRadius: 20,
-      alignItems: "center",
-      justifyContent: "center"
-    },
-    title: {
-      fontWeight: "bold"
-    },
-    code: {
-      fontWeight: "bold",
-      color: theme.colors.primary
-    },
-    progressBar: {
-      height: 10,
-      width: 300,
-      marginTop: 15,
-      marginBottom: 15
-    },
-    icon: {
-      width: "25%",
-      height: "40%"
-    }
-  };
+  const styles = useMemo<AccountStyleSheet>(
+    () => ({
+      view: {
+        height: "50%",
+        width: "95%",
+        borderRadius: 20,
+        alignItems: "center",
+        justifyContent: "center"
+      },
+      title: {
+        fontWeight: "bold"
+      },
+      code: {
+        fontWeight: "bold",
+        color: theme.colors.primary
+      },
+      progressBar: {
+        height: 10,
+        width: 300,
+        marginTop: 15,
+        marginBottom: 15
+      },
+      icon: {
+        width: "25%",
+        height: "40%"
+      }
+    }),
+    [theme]
+  );
 
   const progress = +((otp.remainingTime ?? 0) / (otp.maxTime ?? 30));
   let formattedCode =
