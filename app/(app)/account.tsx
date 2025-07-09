@@ -111,16 +111,13 @@ const Account = () => {
 
     try {
       await Clipboard.setStringAsync(otp.code);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       if (err instanceof Error) {
         toast.error(err.message);
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
     }
-
-    await Clipboard.setStringAsync(otp.code);
-    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
   const icon = otp.icon?.endsWith("noicon.svg") ? undefined : (
