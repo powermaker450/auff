@@ -36,7 +36,7 @@ import * as Haptics from "expo-haptics";
 import { useToast } from "@/contexts/ToastProvider";
 import { Image } from "expo-image";
 import { useSQLiteContext } from "expo-sqlite";
-import { BinaryDbResult } from "@/util/SetupDb";
+import { ConfigResult } from "@/util/SetupDb";
 
 const Account = () => {
   const db = useSQLiteContext();
@@ -52,7 +52,7 @@ const Account = () => {
     navigation.addListener("beforeRemove", otp.clearAccount);
 
     async function config() {
-      const showOtpCodeLocal = await db.getFirstAsync<BinaryDbResult>(
+      const showOtpCodeLocal = await db.getFirstAsync<ConfigResult<"showOtpCode">>(
         "SELECT value FROM config WHERE key = 'showOtpCode'"
       );
       setShowOtpCode(showOtpCodeLocal?.value === "1");
