@@ -52,9 +52,9 @@ const Account = () => {
     navigation.addListener("beforeRemove", otp.clearAccount);
 
     async function config() {
-      const showOtpCodeLocal = await db.getFirstAsync<ConfigResult<"showOtpCode">>(
-        "SELECT value FROM config WHERE key = 'showOtpCode'"
-      );
+      const showOtpCodeLocal = await db.getFirstAsync<
+        ConfigResult<"showOtpCode">
+      >("SELECT value FROM config WHERE key = 'showOtpCode'");
       setShowOtpCode(showOtpCodeLocal?.value === "1");
     }
 
