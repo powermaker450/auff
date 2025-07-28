@@ -43,7 +43,7 @@ const Create = () => {
   const toast = useToast();
   const theme = useTheme();
 
-  const digitOptions = useMemo(() => [6, 7, 8, 9, 10], []);
+  const digitOptions = useMemo<[6, 7, 8, 9, 10]>(() => [6, 7, 8, 9, 10], []);
 
   const algorithmOptions = useMemo<AlgorithmType[]>(
     () => ["sha1", "sha256", "sha512", "md5"],
