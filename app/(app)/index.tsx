@@ -31,6 +31,7 @@ import { ScrollView, View } from "react-native";
 import {
   ActivityIndicator,
   Appbar,
+  FAB,
   List,
   Modal,
   Searchbar,
@@ -56,6 +57,7 @@ interface IndexStyleSheet {
   view: StyleProp<typeof View>;
   title: ComponentProps<(typeof List)["Item"]>["titleStyle"];
   searchBar: StyleProp<typeof Searchbar>;
+  fab: ComponentProps<typeof FAB>["style"];
 }
 
 const Index = () => {
@@ -72,6 +74,13 @@ const Index = () => {
   const [localGroupsReady, setLocalGroupsReady] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [searchText, setSearchText] = useState("");
+
+  const [fabOpen, setFabOpen] = useState(false);
+  const toggleFabOpen = () => setFabOpen(current => !current);
+  const onFabPress = () => {
+    TouchVib();
+    router.navigate("/create");
+  };
 
   const toggleIncluded = useCallback(
     (groupId: number) => {
@@ -371,6 +380,12 @@ const Index = () => {
         width: "95%",
         alignSelf: "center",
         marginBottom: 5
+      },
+      fab: {
+        position: "absolute",
+        margin: 24,
+        right: 0,
+        bottom: 0
       }
     }),
     [bottom]
@@ -459,6 +474,8 @@ const Index = () => {
         />
         <ScrollView>{accountList}</ScrollView>
       </View>
+
+      <FAB style={styles.fab} icon="plus" onPress={onFabPress} />
 
       <FilterSheet ref={sheet} onAnimate={handleSheetAnimate}>
         <Text variant="labelLarge">Tap to include, long press to exclude</Text>
