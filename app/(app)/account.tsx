@@ -37,6 +37,7 @@ import { useToast } from "@/contexts/ToastProvider";
 import { Image } from "expo-image";
 import { useSQLiteContext } from "expo-sqlite";
 import { ConfigResult } from "@/util/SetupDb";
+import { useApi } from "@/contexts/ApiProvider";
 
 interface AccountStyleSheet {
   view: StyleProp<typeof Surface>;
@@ -47,6 +48,7 @@ interface AccountStyleSheet {
 }
 
 const Account = () => {
+  const { api } = useApi();
   const db = useSQLiteContext();
   const otp = useOtp();
   const toast = useToast();
@@ -109,7 +111,7 @@ const Account = () => {
     formattedCode = formattedCode.replaceAll(/\d/g, "*");
   }
 
-  const copy = async () => {
+  async function copy() {
     if (!otp.code) {
       return;
     }
