@@ -413,13 +413,15 @@ const Index = () => {
       <Appbar.Header>
         <Appbar.Content title="Accounts" />
 
-        <Tooltip title="Filters">
-          <Appbar.Action
-            icon="filter-variant"
-            onPressIn={TouchVib}
-            onPress={openSheet}
-          />
-        </Tooltip>
+        {groups.length ? (
+          <Tooltip title="Filters">
+            <Appbar.Action
+              icon="filter-variant"
+              onPressIn={TouchVib}
+              onPress={openSheet}
+            />
+          </Tooltip>
+        ) : undefined}
 
         <Tooltip
           title={
