@@ -11,7 +11,7 @@ import {
   useMemo,
   useState
 } from "react";
-import { View, KeyboardAvoidingView } from "react-native";
+import { View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import {
   ActivityIndicator,
@@ -24,6 +24,7 @@ import {
   TextInput,
   useTheme
 } from "react-native-paper";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 type TypeOrNull<T> = T | null;
 
@@ -223,137 +224,135 @@ const Create = () => {
         <Appbar.Content title="New Account" />
       </Appbar.Header>
 
-      <KeyboardAvoidingView behavior="padding">
-        <ScrollView
-          style={styles.view}
-          contentContainerStyle={styles.viewContent}
+      <KeyboardAwareScrollView
+        style={styles.view}
+        contentContainerStyle={styles.viewContent}
+      >
+        <SegmentedButtons
+          value={otp_type}
+          onValueChange={setType}
+          buttons={[
+            {
+              value: "totp",
+              label: "TOTP",
+              showSelectedCheck: true,
+              onPress: TouchVib
+            },
+            {
+              value: "hotp",
+              label: "HOTP",
+              showSelectedCheck: true,
+              onPress: TouchVib
+            }
+          ]}
+        />
+
+        {iconPreview}
+
+        <TextInput
+          mode="outlined"
+          label="Service"
+          value={service}
+          onChangeText={setService}
+        />
+
+        <Button
+          style={styles.fetchIconButton}
+          mode="contained"
+          onPressIn={TouchVib}
+          onPress={icon ? clearIcon : fetchIcon}
+          disabled={iconLoading || !service.trim()}
         >
-          <SegmentedButtons
-            value={otp_type}
-            onValueChange={setType}
-            buttons={[
-              {
-                value: "totp",
-                label: "TOTP",
-                showSelectedCheck: true,
-                onPress: TouchVib
-              },
-              {
-                value: "hotp",
-                label: "HOTP",
-                showSelectedCheck: true,
-                onPress: TouchVib
-              }
-            ]}
-          />
+          {icon ? "Clear icon" : "Try fetching icon"}
+        </Button>
 
-          {iconPreview}
+        <TextInput
+          mode="outlined"
+          label="Account"
+          value={account}
+          onChangeText={setAccount}
+        />
 
-          <TextInput
-            mode="outlined"
-            label="Service"
-            value={service}
-            onChangeText={setService}
-          />
+        <Text variant="titleLarge" style={styles.label}>
+          Group
+        </Text>
+        <View style={styles.chipContainer}>{groupChips}</View>
 
-          <Button
-            style={styles.fetchIconButton}
-            mode="contained"
-            onPressIn={TouchVib}
-            onPress={icon ? clearIcon : fetchIcon}
-            disabled={iconLoading || !service.trim()}
-          >
-            {icon ? "Clear icon" : "Try fetching icon"}
-          </Button>
+        <TextInput
+          mode="outlined"
+          label="Secret"
+          value={secret}
+          onChangeText={setSecret}
+        />
 
-          <TextInput
-            mode="outlined"
-            label="Account"
-            value={account}
-            onChangeText={setAccount}
-          />
+        <Text variant="titleLarge" style={styles.label}>
+          Digits
+        </Text>
+        <Text variant="titleSmall" style={styles.subLabel}>
+          Default is 6
+        </Text>
+        <View style={styles.chipContainer}>
+          {digitOptions.map(digit => (
+            <Chip
+              key={digit}
+              onPressIn={TouchVib}
+              onPress={() => setDigits(digit)}
+              selected={digits === digit}
+              showSelectedCheck
+              showSelectedOverlay
+            >
+              {digit}
+            </Chip>
+          ))}
+        </View>
 
-          <Text variant="titleLarge" style={styles.label}>
-            Group
-          </Text>
-          <View style={styles.chipContainer}>{groupChips}</View>
+        <Text variant="titleLarge" style={styles.label}>
+          Algorithm
+        </Text>
+        <Text variant="titleSmall" style={styles.subLabel}>
+          Default is sha1
+        </Text>
+        <View style={styles.chipContainer}>
+          {algorithmOptions.map(thisAlgorithm => (
+            <Chip
+              key={thisAlgorithm}
+              onPressIn={TouchVib}
+              onPress={() => setAlgorithm(thisAlgorithm)}
+              selected={algorithm === thisAlgorithm}
+              showSelectedCheck
+              showSelectedOverlay
+            >
+              {thisAlgorithm}
+            </Chip>
+          ))}
+        </View>
 
-          <TextInput
-            mode="outlined"
-            label="Secret"
-            value={secret}
-            onChangeText={setSecret}
-          />
+        <TextInput
+          mode="outlined"
+          label={otp_type === "totp" ? "Period" : "Counter"}
+          placeholder={otp_type === "totp" ? "30" : "0"}
+          value={otp_type === "totp" ? period : counter}
+          onChangeText={otp_type === "totp" ? setPeriod : setCounter}
+        />
 
-          <Text variant="titleLarge" style={styles.label}>
-            Digits
-          </Text>
-          <Text variant="titleSmall" style={styles.subLabel}>
-            Default is 6
-          </Text>
-          <View style={styles.chipContainer}>
-            {digitOptions.map(digit => (
-              <Chip
-                key={digit}
-                onPressIn={TouchVib}
-                onPress={() => setDigits(digit)}
-                selected={digits === digit}
-                showSelectedCheck
-                showSelectedOverlay
-              >
-                {digit}
-              </Chip>
-            ))}
-          </View>
+        <Button
+          mode="contained-tonal"
+          onPressIn={TouchVib}
+          onPress={router.back}
+          disabled={loading}
+        >
+          Cancel
+        </Button>
 
-          <Text variant="titleLarge" style={styles.label}>
-            Algorithm
-          </Text>
-          <Text variant="titleSmall" style={styles.subLabel}>
-            Default is sha1
-          </Text>
-          <View style={styles.chipContainer}>
-            {algorithmOptions.map(thisAlgorithm => (
-              <Chip
-                key={thisAlgorithm}
-                onPressIn={TouchVib}
-                onPress={() => setAlgorithm(thisAlgorithm)}
-                selected={algorithm === thisAlgorithm}
-                showSelectedCheck
-                showSelectedOverlay
-              >
-                {thisAlgorithm}
-              </Chip>
-            ))}
-          </View>
-
-          <TextInput
-            mode="outlined"
-            label={otp_type === "totp" ? "Period" : "Counter"}
-            placeholder={otp_type === "totp" ? "30" : "0"}
-            value={otp_type === "totp" ? period : counter}
-            onChangeText={otp_type === "totp" ? setPeriod : setCounter}
-          />
-
-          <Button
-            mode="contained-tonal"
-            onPressIn={TouchVib}
-            onPress={router.back}
-            disabled={loading}
-          >
-            Cancel
-          </Button>
-
-          <Button
-            mode="contained"
-            onPressIn={TouchVib}
-            onPress={create}
-            disabled={loading || invalidFields}
-          >
-            Create
-          </Button>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        <Button
+          mode="contained"
+          onPressIn={TouchVib}
+          onPress={create}
+          disabled={loading || invalidFields}
+        >
+          Create
+        </Button>
+      </KeyboardAwareScrollView>
     </>
   );
 };

@@ -24,6 +24,7 @@ import { Redirect, Stack } from "expo-router";
 import { useMemo } from "react";
 import { useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import { MD3DarkTheme, MD3LightTheme, Text } from "react-native-paper";
 
 const AppLayout = () => {
@@ -63,7 +64,9 @@ const AppLayout = () => {
   return (
     <GestureHandlerRootView>
       <BottomSheetModalProvider>
-        <Stack screenOptions={styles.stack} />
+        <KeyboardProvider>
+          <Stack screenOptions={styles.stack} />
+        </KeyboardProvider>
       </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );
