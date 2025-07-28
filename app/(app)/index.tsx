@@ -402,7 +402,7 @@ const Index = () => {
     const removeExcluded = (account: TwoFAccount) =>
       !excludedGroups.includes(account.group_id ?? -1);
     const createAccountPreview = (account: TwoFAccount) => (
-      <AccountPreview key={account.id} account={account} />
+      <AccountPreview key={account.id} account={account} refresh={getData} />
     );
     const filterSearched = (account: TwoFAccount) => {
       const text = searchText.trim().toLowerCase();

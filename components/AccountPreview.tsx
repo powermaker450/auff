@@ -18,21 +18,44 @@
 
 import { useApi } from "@/contexts/ApiProvider";
 import { useOtp } from "@/contexts/OtpProvider";
+import { useToast } from "@/contexts/ToastProvider";
 import { StyleProp } from "@/util/StyleProp";
+import TouchVib from "@/util/TouchVib";
 import { TwoFAccount } from "@povario/2fauth.js";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import { ComponentProps } from "react";
-import { List, useTheme } from "react-native-paper";
+import { ComponentProps, useState } from "react";
+import {
+  Button,
+  Dialog,
+  List,
+  Portal,
+  Text,
+  useTheme
+} from "react-native-paper";
 
 interface AccountPreviewProps {
   account: TwoFAccount;
+  refresh: () => void;
 }
 
-const AccountPreview = ({ account }: AccountPreviewProps) => {
+const AccountPreview = ({ account, refresh }: AccountPreviewProps) => {
+  const { api } = useApi();
+  const toast = useToast();
   const theme = useTheme();
   const otp = useOtp();
   const { baseUrl } = useApi();
+
+  const [loading, setLoading] = useState(false);
+  const startLoading = () => setLoading(true);
+  const stopLoading = () => setLoading(false);
+
+  const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
+  const showDeleteDialog = () => {
+    TouchVib();
+    setDeleteDialogVisible(true);
+  };
+  const hideDeleteDialog = () => setDeleteDialogVisible(false);
 
   const styles: {
     account: StyleProp<(typeof List)["Item"]>;
@@ -57,6 +80,27 @@ const AccountPreview = ({ account }: AccountPreviewProps) => {
     }
   };
 
+  async function del() {
+    if (!account.id) {
+      return;
+    }
+
+    startLoading();
+
+    try {
+      await api.accounts.delete(account.id);
+
+      refresh();
+      toast.show(`${account.service ?? "Account"} deleted.`);
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      }
+    } finally {
+      stopLoading();
+    }
+  }
+
   const icon = () =>
     account.icon ? (
       <Image
@@ -73,15 +117,47 @@ const AccountPreview = ({ account }: AccountPreviewProps) => {
   };
 
   return (
-    <List.Item
-      style={styles.account}
-      key={account.id}
-      title={account.service ?? "[No Name]"}
-      description={account.account}
-      titleStyle={styles.title}
-      left={icon}
-      onPress={openOtp}
-    />
+    <>
+      <List.Item
+        style={styles.account}
+        key={account.id}
+        title={account.service ?? "[No Name]"}
+        description={account.account}
+        titleStyle={styles.title}
+        left={icon}
+        onPress={openOtp}
+        onLongPress={showDeleteDialog}
+      />
+
+      <Portal>
+        <Dialog visible={deleteDialogVisible} onDismiss={hideDeleteDialog}>
+          <Dialog.Title>Delete {account.service ?? "account"}</Dialog.Title>
+
+          <Dialog.Content>
+            <Text>Are you sure you want to delete this account?</Text>
+          </Dialog.Content>
+
+          <Dialog.Actions>
+            <Button
+              onPressIn={TouchVib}
+              onPress={hideDeleteDialog}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              onPressIn={TouchVib}
+              onPress={del}
+              textColor={theme.colors.error}
+              disabled={loading}
+            >
+              Delete
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+    </>
   );
 };
 

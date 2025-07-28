@@ -125,7 +125,7 @@ const Account = () => {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
     }
-  };
+  }
 
   const icon = otp.icon?.endsWith("noicon.svg") ? undefined : (
     <Image source={otp.icon} style={styles.icon} />
