@@ -47,7 +47,13 @@
           "useSQLCipher": true
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "$(PRODUCT_NAME) uses the Camera to scan TOTP/HOTP QR codes."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
