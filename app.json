@@ -53,7 +53,8 @@
         {
           "cameraPermissionText": "$(PRODUCT_NAME) uses the Camera to scan TOTP/HOTP QR codes."
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
