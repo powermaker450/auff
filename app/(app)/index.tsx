@@ -31,11 +31,15 @@ import { ScrollView, View } from "react-native";
 import {
   ActivityIndicator,
   Appbar,
+  Button,
+  Dialog,
   FAB,
   List,
   Modal,
+  Portal,
   Searchbar,
   Text,
+  TextInput,
   Tooltip
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -75,6 +79,20 @@ const Index = () => {
   const [localGroupsReady, setLocalGroupsReady] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [searchText, setSearchText] = useState("");
+
+  const [newGroupName, setNewGroupName] = useState("");
+  const resetNewGroupName = () => setNewGroupName("");
+
+  const [groupDialogVisible, setGroupDialogVisible] = useState(false);
+  const showGroupDialog = () => setGroupDialogVisible(true);
+  const hideGroupDialog = () => {
+    resetNewGroupName();
+    setGroupDialogVisible(false);
+  };
+
+  const [createGroupLoading, setCreateGroupLoading] = useState(false);
+  const startCreateGroupLoading = () => setCreateGroupLoading(true);
+  const stopCreateGroupLoading = () => setCreateGroupLoading(false);
 
   const [fabGroupState, setFabGroupState] = useState({ open: false });
   const onFabStateChange = (state: { open: boolean }) => {
@@ -288,6 +306,27 @@ const Index = () => {
 
     setRefreshing(false);
   }
+
+  const createGroup = useCallback(async () => {
+    if (!newGroupName) {
+      return;
+    }
+
+    startCreateGroupLoading();
+
+    try {
+      const res = await api.groups.create(newGroupName);
+      toast.show(`${res.name} created`);
+
+      getData();
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      }
+    } finally {
+      stopCreateGroupLoading();
+    }
+  }, [newGroupName]);
 
   // Get and set group and account data
   useEffect(() => {
@@ -503,7 +542,7 @@ const Index = () => {
           {
             label: "Create Account Group",
             icon: "account-multiple-plus",
-            onPress: () => toast.error("Not implemented... (yet)")
+            onPress: showGroupDialog
           },
           {
             label: "Create Account manually",
@@ -532,6 +571,34 @@ const Index = () => {
         {/* Modals don't like to be empty... */}
         <></>
       </Modal>
+
+      <Portal>
+        <Dialog visible={groupDialogVisible} onDismiss={hideGroupDialog}>
+          <Dialog.Title>Create New Group</Dialog.Title>
+
+          <Dialog.Content>
+            <TextInput
+              mode="outlined"
+              value={newGroupName}
+              onChangeText={setNewGroupName}
+            />
+          </Dialog.Content>
+
+          <Dialog.Actions>
+            <Button onPressIn={TouchVib} onPress={hideGroupDialog}>
+              Cancel
+            </Button>
+
+            <Button
+              onPressIn={TouchVib}
+              onPress={createGroup}
+              disabled={!newGroupName.trim()}
+            >
+              Create Group
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </>
   );
 };
