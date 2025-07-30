@@ -41,7 +41,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSQLiteContext } from "expo-sqlite";
 import { useNetworkState } from "expo-network";
-import { router } from "expo-router";
+import { router, useNavigation } from "expo-router";
 import TouchVib from "@/util/TouchVib";
 import { AxiosError } from "axios";
 import { useToast } from "@/contexts/ToastProvider";
@@ -64,6 +64,7 @@ const Index = () => {
   const db = useSQLiteContext();
   const toast = useToast();
   const network = useNetworkState();
+  const navigation = useNavigation();
 
   const { api, logout } = useApi();
   const { bottom } = useSafeAreaInsets();
@@ -290,8 +291,22 @@ const Index = () => {
 
   // Get and set group and account data
   useEffect(() => {
-    getData().catch(console.error);
+    if (!network.isInternetReachable) {
+      return;
+    }
+
+    getData();
   }, [network]);
+
+  useEffect(() => {
+    navigation.addListener("focus", () => {
+      if (!network.isInternetReachable) {
+        return;
+      }
+
+      getData();
+    });
+  }, []);
 
   // Get selected groups from the local database
   useEffect(() => {
