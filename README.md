@@ -4,7 +4,7 @@ A mobile client for [2FAuth](https://2fauth.app), made with React Native, React 
 
 
 > [!NOTE]
-> Not all features are implemented yet, notably creating new auth codes, manual or through a QR Code. Viewing and copying still work.
+> The app is early in development, so not all features are implemented yet, and those that are may not work as you expect! If you find a bug, please report it!
 
 <p>
   <img alt="Home screen" src="https://raw.githubusercontent.com/powermaker450/auff/refs/heads/main/repo/home.png" width="200">
