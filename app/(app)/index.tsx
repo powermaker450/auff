@@ -75,11 +75,10 @@ const Index = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [searchText, setSearchText] = useState("");
 
-  const [fabOpen, setFabOpen] = useState(false);
-  const toggleFabOpen = () => setFabOpen(current => !current);
-  const onFabPress = () => {
+  const [fabGroupState, setFabGroupState] = useState({ open: false });
+  const onFabStateChange = (state: { open: boolean }) => {
     TouchVib();
-    router.navigate("/create");
+    setFabGroupState(state);
   };
 
   const toggleIncluded = useCallback(
@@ -475,7 +474,29 @@ const Index = () => {
         <ScrollView>{accountList}</ScrollView>
       </View>
 
-      <FAB style={styles.fab} icon="plus" onPress={onFabPress} />
+      <FAB.Group
+        open={fabGroupState.open}
+        onStateChange={onFabStateChange}
+        visible
+        icon={fabGroupState.open ? "close" : "plus"}
+        actions={[
+          {
+            label: "Scan QR Code",
+            icon: "qrcode",
+            onPress: () => router.navigate("/scan")
+          },
+          {
+            label: "Create Account Group",
+            icon: "account-multiple-plus",
+            onPress: () => toast.error("Not implemented... (yet)")
+          },
+          {
+            label: "Create Account manually",
+            icon: "account-plus",
+            onPress: () => router.navigate("/create")
+          }
+        ]}
+      />
 
       <FilterSheet ref={sheet} onAnimate={handleSheetAnimate}>
         <Text variant="labelLarge">Tap to include, long press to exclude</Text>
